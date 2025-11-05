@@ -11,30 +11,33 @@
     <header class="header">
         <h1>Расписание Записи на Тренировки</h1>
         <p>Простое и стильное управление бронированием.</p>
+        <button id="admin-toggle-btn" class="submit-button" style="margin-top: 15px;">Войти в режим Администратора</button> 
     </header>
 
-    <section class="admin-section">
-        <h2>➕ Добавить новую тренировку</h2>
-        <form id="add-training-form" class="training-form">
-            <div class="form-group">
-                <label for="date">Дата:</label>
-                <input type="date" id="date" required>
-            </div>
-            <div class="form-group">
-                <label for="time">Время:</label>
-                <input type="time" id="time" required>
-            </div>
-            <div class="form-group">
-                <label for="name">Название:</label>
-                <input type="text" id="name" placeholder="Йога, КроссФит, Пилатес..." required>
-            </div>
-            <div class="form-group">
-                <label for="capacity">Макс. мест:</label>
-                <input type="number" id="capacity" min="1" value="10" required>
-            </div>
-            <button type="submit" class="submit-button">Создать Тренировку</button>
-        </form>
-    </section>
+    <div id="admin-panel-container">
+        <section class="admin-section">
+            <h2>➕ Добавить новую тренировку</h2>
+            <form id="add-training-form" class="training-form">
+                <div class="form-group">
+                    <label for="date">Дата:</label>
+                    <input type="date" id="date" required>
+                </div>
+                <div class="form-group">
+                    <label for="time">Время:</label>
+                    <input type="time" id="time" required>
+                </div>
+                <div class="form-group">
+                    <label for="name">Название:</label>
+                    <input type="text" id="name" placeholder="Йога, КроссФит, Пилатес..." required>
+                </div>
+                <div class="form-group">
+                    <label for="capacity">Макс. мест:</label>
+                    <input type="number" id="capacity" min="1" value="10" required>
+                </div>
+                <button type="submit" class="submit-button">Создать Тренировку</button>
+            </form>
+        </section>
+    </div>
 
     <hr>
 
