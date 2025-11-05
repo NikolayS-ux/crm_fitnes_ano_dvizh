@@ -12,7 +12,7 @@ function getSchedule() {
     const data = localStorage.getItem(STORAGE_KEY);
     let schedule = data ? JSON.parse(data) : [];
     
-    // Обеспечиваем, что registered - это всегда массив, а не число
+    // Обеспечиваем, что registered - это всегда массив
     schedule = schedule.map(t => {
         if (!Array.isArray(t.registered)) {
             t.registered = []; 
@@ -27,15 +27,12 @@ function saveSchedule(schedule) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(schedule));
 }
 
-// Скрываем админ-панель при загрузке страницы по умолчанию
-adminContainer.classList.add('hidden'); 
-
 
 // --- 2. Логика АДМИНИСТРИРОВАНИЯ ---
 
 // Функция для переключения режима
 adminButton.addEventListener('click', function() {
-    const password = 'admin'; // !!! ВАШ ПРОСТОЙ АДМИН-ПАРОЛЬ !!!
+    const password = 'admin'; // !!! АДМИН-ПАРОЛЬ !!!
     
     if (!isAdminMode) {
         // Вход в режим админа
@@ -133,7 +130,7 @@ function handleBooking(trainingId) {
             const vkLink = prompt('Пожалуйста, введите ссылку на Вашу страницу VK (например, vk.com/id12345):');
             if (!vkLink) return; 
             
-            // Проверка на дубликат
+            // Проверка на дубликат (игнорируем регистр)
             if (training.registered.some(r => r.fullName.toLowerCase() === fullName.trim().toLowerCase())) {
                 alert('Вы уже записаны на эту тренировку!');
                 return;
@@ -259,5 +256,15 @@ function renderSchedule() {
     }
 }
 
-// Запускаем отображение расписания при загрузке страницы
-document.addEventListener('DOMContentLoaded', renderSchedule);
+// --- НОВАЯ ФУНКЦИЯ ДЛЯ ИНИЦИАЛИЗАЦИИ ---
+function initializeApp() {
+    // Гарантированно скрываем админ-панель после загрузки всех элементов
+    if (adminContainer) {
+        adminContainer.classList.add('hidden'); 
+    }
+    // Запускаем отображение расписания
+    renderSchedule();
+}
+
+// Запускаем инициализацию при полной загрузке страницы
+document.addEventListener('DOMContentLoaded', initializeApp);
