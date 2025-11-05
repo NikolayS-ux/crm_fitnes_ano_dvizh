@@ -1,22 +1,21 @@
 // --- 1. Константы и Инициализация ---
 
-// Ключ, под которым мы будем хранить данные в локальном хранилище браузера
 const STORAGE_KEY = 'trainingSchedule';
-// Получаем элементы из HTML
 const form = document.getElementById('add-training-form');
 const scheduleList = document.getElementById('schedule-list');
+// Элементы для Админки
+const adminContainer = document.getElementById('admin-panel-container');
+const adminButton = document.getElementById('admin-toggle-btn');
+let isAdminMode = false; // Состояние режима
 
-// Функция для получения расписания из локального хранилища
 function getSchedule() {
     const data = localStorage.getItem(STORAGE_KEY);
-    // Важно: теперь поле registered - это массив, а не число!
-    // Добавим проверку на старый формат и инициализируем его как массив, если нужно.
     let schedule = data ? JSON.parse(data) : [];
     
-    // Проверяем старые данные и конвертируем их, если они еще в виде числа
+    // Обеспечиваем, что registered - это всегда массив, а не число
     schedule = schedule.map(t => {
-        if (typeof t.registered === 'number') {
-            t.registered = []; // Преобразуем число в пустой массив
+        if (!Array.isArray(t.registered)) {
+            t.registered = []; 
         }
         return t;
     });
@@ -24,13 +23,70 @@ function getSchedule() {
     return schedule;
 }
 
-// Функция для сохранения расписания в локальное хранилище
 function saveSchedule(schedule) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(schedule));
 }
 
+// Скрываем админ-панель при загрузке страницы по умолчанию
+adminContainer.classList.add('hidden'); 
 
-// --- 2. Логика добавления новой тренировки (без изменений) ---
+
+// --- 2. Логика АДМИНИСТРИРОВАНИЯ ---
+
+// Функция для переключения режима
+adminButton.addEventListener('click', function() {
+    const password = 'admin'; // !!! ВАШ ПРОСТОЙ АДМИН-ПАРОЛЬ !!!
+    
+    if (!isAdminMode) {
+        // Вход в режим админа
+        const enteredPassword = prompt('Введите пароль администратора:');
+        if (enteredPassword === password) {
+            isAdminMode = true;
+            adminContainer.classList.remove('hidden'); 
+            adminButton.textContent = 'Выйти из режима Администратора';
+            renderSchedule(); 
+            alert('Вход выполнен. Вы в режиме Администратора.');
+        } else if (enteredPassword !== null) {
+            alert('Неверный пароль.');
+        }
+    } else {
+        // Выход из режима админа
+        isAdminMode = false;
+        adminContainer.classList.add('hidden'); 
+        adminButton.textContent = 'Войти в режим Администратора';
+        renderSchedule(); 
+        alert('Выход выполнен. Вы в режиме Пользователя.');
+    }
+});
+
+
+// Функция для удаления всей тренировки
+function deleteTraining(trainingId) {
+    if (confirm('Вы уверены, что хотите полностью удалить эту тренировку?')) {
+        let schedule = getSchedule();
+        schedule = schedule.filter(t => t.id !== trainingId);
+        saveSchedule(schedule);
+        renderSchedule();
+    }
+}
+
+// Функция для удаления конкретной записи человека
+function deleteRegistration(trainingId, fullName) {
+    if (confirm(`Вы уверены, что хотите удалить запись человека "${fullName}"?`)) {
+        const schedule = getSchedule();
+        const training = schedule.find(t => t.id === trainingId);
+
+        if (training) {
+            // Фильтруем массив записей, чтобы удалить нужного человека по ФИО
+            training.registered = training.registered.filter(p => p.fullName !== fullName);
+            saveSchedule(schedule);
+            renderSchedule();
+        }
+    }
+}
+
+
+// --- 3. Логика добавления новой тренировки ---
 
 form.addEventListener('submit', function(event) {
     event.preventDefault(); 
@@ -46,7 +102,7 @@ form.addEventListener('submit', function(event) {
         time,
         name,
         capacity,
-        registered: [], // Теперь это массив для хранения данных о записавшихся
+        registered: [], // Массив для записей
     };
 
     const schedule = getSchedule();
@@ -59,7 +115,7 @@ form.addEventListener('submit', function(event) {
 });
 
 
-// --- 3. ЛОГИКА ПОИМЕННОЙ ЗАПИСИ НА ТРЕНИРОВКУ ---
+// --- 4. Логика поименной записи на тренировку ---
 
 function handleBooking(trainingId) {
     const schedule = getSchedule();
@@ -68,29 +124,26 @@ function handleBooking(trainingId) {
     if (trainingIndex !== -1) {
         const training = schedule[trainingIndex];
         
-        // Проверяем, есть ли свободные места (сравниваем длину массива с вместимостью)
         if (training.registered.length < training.capacity) {
             
-            // --- Запрашиваем данные у пользователя ---
+            // Запрашиваем данные у пользователя
             const fullName = prompt('Пожалуйста, введите Ваше ФИО (Имя и Фамилия):');
-            if (!fullName) return; // Если пользователь нажал Отмена
+            if (!fullName) return; 
 
             const vkLink = prompt('Пожалуйста, введите ссылку на Вашу страницу VK (например, vk.com/id12345):');
-            if (!vkLink) return; // Если пользователь нажал Отмена
+            if (!vkLink) return; 
             
-            // Проверяем, не записан ли этот человек уже
-            if (training.registered.some(r => r.fullName === fullName)) {
+            // Проверка на дубликат
+            if (training.registered.some(r => r.fullName.toLowerCase() === fullName.trim().toLowerCase())) {
                 alert('Вы уже записаны на эту тренировку!');
                 return;
             }
 
-            // Создаем объект с данными записавшегося
             const newRegistration = {
                 fullName: fullName.trim(),
                 vkLink: vkLink.trim(),
             };
 
-            // Добавляем запись в массив
             training.registered.push(newRegistration); 
             saveSchedule(schedule);
             renderSchedule(); 
@@ -102,12 +155,11 @@ function handleBooking(trainingId) {
 }
 
 
-// --- 4. ЛОГИКА ОТОБРАЖЕНИЯ РАСПИСАНИЯ С УЧЕТОМ ЗАПИСЕЙ ---
+// --- 5. Логика отображения расписания (с кнопками удаления для Админа) ---
 
 function renderSchedule() {
     const schedule = getSchedule();
     
-    // Сортируем расписание по дате и времени
     schedule.sort((a, b) => {
         const dateTimeA = new Date(`${a.date}T${a.time}`);
         const dateTimeB = new Date(`${b.date}T${b.time}`);
@@ -122,7 +174,6 @@ function renderSchedule() {
     }
 
     schedule.forEach(training => {
-        // Текущее количество записанных теперь равно длине массива registered
         const currentRegistered = training.registered.length;
         const isFull = currentRegistered >= training.capacity;
         const availableSlots = training.capacity - currentRegistered;
@@ -130,23 +181,31 @@ function renderSchedule() {
         const statusClass = isFull ? 'status-full' : 'status-available';
         const statusText = isFull ? 'МЕСТ НЕТ' : `Свободно: ${availableSlots}`;
 
-        // Создаем HTML для списка записавшихся
+        // Создаем HTML для списка записавшихся, добавляя кнопку удаления, если мы Админ
         let registeredListHtml = '';
         if (currentRegistered > 0) {
             registeredListHtml = '<h4>Записались:</h4><ul>';
             training.registered.forEach(person => {
-                // Отображаем ФИО и делаем ссылку на VK
+                // Если мы в режиме Админа, добавляем кнопку удаления записи
+                const deleteBtnHtml = isAdminMode 
+                    ? `<button class="delete-button delete-registration-btn" data-training-id="${training.id}" data-full-name="${person.fullName}">Удалить</button>`
+                    : '';
                 registeredListHtml += `
                     <li>
                         ${person.fullName} (<a href="${person.vkLink}" target="_blank">VK</a>)
+                        ${deleteBtnHtml}
                     </li>
                 `;
             });
             registeredListHtml += '</ul>';
         }
 
+        // Кнопка удаления всей тренировки (только для Админа)
+        const deleteTrainingBtnHtml = isAdminMode 
+            ? `<button class="delete-button delete-training-btn" style="width: 100%; margin-top: 10px;" data-id="${training.id}">Удалить Тренировку</button>`
+            : '';
 
-        // Создаем HTML-карточку для каждой тренировки
+        // Создаем HTML-карточку
         const cardHtml = `
             <div class="training-card">
                 <h3>${training.name}</h3>
@@ -154,28 +213,50 @@ function renderSchedule() {
                     <p><strong>📅 Дата:</strong> ${new Date(training.date).toLocaleDateString('ru-RU', { weekday: 'short', day: 'numeric', month: 'long' })}</p>
                     <p><strong>⏰ Время:</strong> ${training.time}</p>
                     <p><strong>👥 Записано:</strong> ${currentRegistered} из ${training.capacity}</p>
-                    ${registeredListHtml} </div>
+                    ${registeredListHtml} 
+                </div>
                 <div class="booking-status ${statusClass}">${statusText}</div>
                 <button 
                     class="book-button" 
                     data-id="${training.id}"
-                    ${isFull ? 'disabled' : ''}
+                    ${isFull || isAdminMode ? 'disabled' : ''}
                 >
-                    ${isFull ? 'Места закончились' : 'Записаться'}
+                    ${isAdminMode ? 'В режиме админа нельзя записаться' : (isFull ? 'Места закончились' : 'Записаться')}
                 </button>
+                ${deleteTrainingBtnHtml}
             </div>
         `;
 
         scheduleList.innerHTML += cardHtml;
     });
 
-    // Добавляем обработчик нажатия на кнопки
-    document.querySelectorAll('.book-button').forEach(button => {
+    // Добавляем обработчики кнопок Записаться 
+    document.querySelectorAll('.book-button:not([disabled])').forEach(button => {
         button.addEventListener('click', function() {
             const trainingId = parseInt(this.getAttribute('data-id'), 10);
             handleBooking(trainingId);
         });
     });
+
+    // Добавляем обработчики для кнопок удаления (НОВАЯ ЛОГИКА)
+    if (isAdminMode) {
+        // Удаление всей тренировки
+        document.querySelectorAll('.delete-training-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const trainingId = parseInt(this.getAttribute('data-id'), 10);
+                deleteTraining(trainingId);
+            });
+        });
+
+        // Удаление отдельной записи
+        document.querySelectorAll('.delete-registration-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const trainingId = parseInt(this.getAttribute('data-training-id'), 10);
+                const fullName = this.getAttribute('data-full-name');
+                deleteRegistration(trainingId, fullName);
+            });
+        });
+    }
 }
 
 // Запускаем отображение расписания при загрузке страницы
