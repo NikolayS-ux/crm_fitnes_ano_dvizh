@@ -1,1 +1,50 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💪 Расписание Тренировок</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
 
+    <header class="header">
+        <h1>Расписание Записи на Тренировки</h1>
+        <p>Простое и стильное управление бронированием.</p>
+    </header>
+
+    <section class="admin-section">
+        <h2>➕ Добавить новую тренировку</h2>
+        <form id="add-training-form" class="training-form">
+            <div class="form-group">
+                <label for="date">Дата:</label>
+                <input type="date" id="date" required>
+            </div>
+            <div class="form-group">
+                <label for="time">Время:</label>
+                <input type="time" id="time" required>
+            </div>
+            <div class="form-group">
+                <label for="name">Название:</label>
+                <input type="text" id="name" placeholder="Йога, КроссФит, Пилатес..." required>
+            </div>
+            <div class="form-group">
+                <label for="capacity">Макс. мест:</label>
+                <input type="number" id="capacity" min="1" value="10" required>
+            </div>
+            <button type="submit" class="submit-button">Создать Тренировку</button>
+        </form>
+    </section>
+
+    <hr>
+
+    <section class="schedule-section">
+        <h2>🗓️ Текущее расписание</h2>
+        <div id="schedule-list" class="schedule-list">
+            <p>Расписание пока пусто. Добавьте первую тренировку!</p>
+        </div>
+    </section>
+
+    <script src="script.js"></script>
+</body>
+</html>
