@@ -155,7 +155,7 @@ h1, h2 {
     cursor: not-allowed;
 }
 
-/* Стили для кнопок удаления (НОВЫЕ) */
+/* Стили для кнопок удаления */
 .delete-button {
     background-color: #dc3545; /* Красный цвет */
     color: white;
