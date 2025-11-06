@@ -1,3 +1,10 @@
+// ! НОВЫЕ СТРОКИ: Инициализация VK Bridge !
+// Этот код запускает обмен данными между вашим приложением и VK.
+if (window.vkBridge) {
+    vkBridge.send('VKWebAppInit');
+}
+
+
 // --- 1. Константы, Инициализация Firebase и Подключение к БД ---
 
 // !!! 🚨 ВАША КОНФИГУРАЦИЯ FIREBASE (КЛЮЧИ) 🚨 !!!
@@ -15,7 +22,7 @@ const firebaseConfig = {
 const app = firebase.initializeApp(firebaseConfig);
 // Получаем ссылку на базу данных Firestore
 const db = app.firestore();
-// НОВАЯ СТРОКА: Получаем ссылку на сервис Аутентификации
+// Получаем ссылку на сервис Аутентификации
 const auth = app.auth(); 
 // Ссылка на нашу коллекцию с расписанием
 const trainingsRef = db.collection('trainings');
@@ -108,7 +115,7 @@ form.addEventListener('submit', async function(event) {
 
 
 // --- 4. ЛОГИКА ЗАПИСИ НА ТРЕНИРОВКУ (С FIREBASE) ---
-// (Логика не меняется, но теперь она будет работать только с открытыми правилами)
+// (Логика не меняется, использует транзакции)
 
 async function handleBooking(trainingId) {
     const trainingRef = trainingsRef.doc(trainingId);
@@ -157,9 +164,11 @@ async function handleBooking(trainingId) {
 
 
 // --- 5. ЛОГИКА УДАЛЕНИЯ ТРЕНИРОВКИ/ЗАПИСИ (С FIREBASE) ---
-// (Логика не меняется, но она будет блокироваться правилами!)
+// (Логика не меняется)
 
 async function deleteTraining(trainingId) {
+    if (!auth.currentUser) return alert('Действие доступно только администратору.');
+    
     if (confirm('Вы уверены, что хотите полностью удалить эту тренировку из базы данных?')) {
         try {
             await trainingsRef.doc(trainingId).delete();
@@ -172,6 +181,8 @@ async function deleteTraining(trainingId) {
 }
 
 async function deleteRegistration(trainingId, fullName) {
+    if (!auth.currentUser) return alert('Действие доступно только администратору.');
+
     if (confirm(`Вы уверены, что хотите удалить запись человека "${fullName}"?`)) {
         const trainingRef = trainingsRef.doc(trainingId);
 
@@ -294,7 +305,7 @@ function renderSchedule(schedule) {
 }
 
 
-// --- 7. ЗАПУСК ПРИЛОЖЕНИЯ: СЛУШАТЕЛЬ FIREBASE И ПРОВЕРКА ВХОДА ---
+// --- 7. ЗАПУСК ПРИЛОЖЕНИЯ: СЛУШАТЕЛЬ FIREBASE И ПРОВЕРКА ВХОДА И НАСТРОЙКА VK ---
 
 function initializeApp() {
     // 1. Скрываем админ-панель
@@ -302,10 +313,10 @@ function initializeApp() {
         adminContainer.classList.add('hidden'); 
     }
     
-    // 2. Слушатель, который проверяет состояние входа (новый, но не влияет на работу)
+    // 2. Слушатель, который проверяет состояние входа
     auth.onAuthStateChanged(user => {
         if (user) {
-            // Пользователь вошел (например, после обновления страницы)
+            // Пользователь вошел 
             isAdminMode = true;
             adminContainer.classList.remove('hidden');
             adminButton.textContent = 'Выйти из режима Администратора';
@@ -317,7 +328,17 @@ function initializeApp() {
         }
     });
 
-    // 3. Устанавливаем слушатель Firebase для расписания (остается прежним)
+    // ! НОВЫЙ КОД: Устанавливаем цвет фона приложения под тему VK !
+    if (window.vkBridge) {
+        // Мы отправляем команду, чтобы приложение выглядело нативно в VK
+        vkBridge.send('VKWebAppSetViewSettings', {
+            'status_bar_style': 'light',
+            'action_bar_color': 'none',
+            'navigation_bar_color': 'none',
+        }).catch(e => console.log('Не удалось установить настройки VK.', e));
+    }
+
+    // 3. Устанавливаем слушатель Firebase для расписания 
     trainingsRef.onSnapshot((querySnapshot) => {
         const schedule = [];
         querySnapshot.forEach((doc) => {
