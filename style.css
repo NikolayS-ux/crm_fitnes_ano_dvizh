@@ -16,16 +16,22 @@ body {
     background-color: var(--background-light);
     color: #343a40;
     line-height: 1.6;
+    /* ! НОВЫЕ СТИЛИ ДЛЯ ЦЕНТРИРОВАНИЯ ! */
+    display: flex;
+    flex-direction: column;
+    align-items: center; 
 }
 
 .header, .admin-section, .schedule-section {
+    /* Максимальная ширина, чтобы не растягивалось на весь экран */
     max-width: 900px;
-    margin: 20px auto;
+    width: 90%; /* Используем 90% ширины на маленьких экранах */
+    /* ! ГЛАВНОЕ ДЛЯ ЦЕНТРИРОВАНИЯ ! */
+    margin: 20px auto; 
     padding: 20px;
     background: var(--card-background);
     border-radius: 8px;
-    /* Простая, мягкая тень */
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); 
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 h1, h2 {
@@ -61,7 +67,7 @@ h1, h2 {
     box-sizing: border-box; 
 }
 
-.submit-button {
+.submit-button, #admin-toggle-btn {
     background-color: var(--success-color);
     color: white;
     padding: 10px 15px;
@@ -72,7 +78,7 @@ h1, h2 {
     transition: background-color 0.2s;
 }
 
-.submit-button:hover {
+.submit-button:hover, #admin-toggle-btn:hover {
     background-color: #1e7e34;
 }
 
@@ -85,7 +91,7 @@ h1, h2 {
 }
 
 .training-card {
-    background: var(--card-background); /* Белый фон карточки */
+    background: var(--card-background);
     padding: 15px;
     border-radius: 6px;
     /* Яркая вертикальная линия */
