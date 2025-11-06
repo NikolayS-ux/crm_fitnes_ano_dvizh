@@ -1,11 +1,13 @@
-/* --- Общие стили и сброс --- */
+/* --- Стили Неоморфизма (Soft UI) --- */
 :root {
-    --primary-color: #007bff;
-    --secondary-color: #6c757d;
-    --success-color: #28a745;
-    --background-light: #f8f9fa;
-    --card-background: #ffffff;
-    --border-color: #e9ecef;
+    /* Основной, мягкий фон */
+    --main-bg-color: #e0e5ec;
+    /* Основной цвет для теней (темный и светлый) */
+    --shadow-light: #ffffff;
+    --shadow-dark: #a3b1c6;
+    /* Акцентный цвет (заменяем яркий синий на более приглушенный) */
+    --accent-color: #6d5bba; 
+    --text-color: #555;
     --font-family: 'Arial', sans-serif;
 }
 
@@ -13,12 +15,184 @@ body {
     font-family: var(--font-family);
     margin: 0;
     padding: 0;
-    background-color: var(--background-light);
-    color: #343a340;
+    background-color: var(--main-bg-color);
+    color: var(--text-color);
     line-height: 1.6;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
-/* (и так далее, полный код, как в предыдущих ответах) */
-/* ... (остальная часть CSS-кода) ... */
+/* --- Основные контейнеры (Header, Section) --- */
+.header, .admin-section, .schedule-section {
+    max-width: 900px;
+    width: 90%; 
+    margin: 20px auto;
+    padding: 30px;
+    border-radius: 12px;
+    background: var(--main-bg-color);
+    
+    /* Эффект Неоморфизма (вдавленности) */
+    box-shadow: 
+        9px 9px 16px var(--shadow-dark),
+        -9px -9px 16px var(--shadow-light);
+}
 
-/* ... Убедитесь, что вы скопировали полный CSS-код, который мы писали ранее, для правильного оформления ... */
+h1, h2 {
+    color: var(--accent-color);
+    text-align: center;
+    margin-top: 0;
+    font-weight: 600;
+}
+
+/* --- Стили для Формы и Полей Ввода --- */
+.training-form {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    align-items: flex-end; 
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px 15px;
+    border: none;
+    border-radius: 8px;
+    box-sizing: border-box; 
+    
+    /* Эффект Неоморфизма (вдавленности) */
+    background: var(--main-bg-color);
+    box-shadow: 
+        inset 5px 5px 10px var(--shadow-dark),
+        inset -5px -5px 10px var(--shadow-light);
+    color: var(--text-color);
+}
+
+/* --- Стили для Кнопок (Выпуклость) --- */
+.submit-button, .book-button, .delete-button, #admin-toggle-btn {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    transition: all 0.2s ease;
+    
+    /* Базовый выпуклый эффект */
+    background: var(--main-bg-color);
+    box-shadow: 
+        6px 6px 12px var(--shadow-dark),
+        -6px -6px 12px var(--shadow-light);
+    color: var(--accent-color); /* Используем акцентный цвет для текста */
+}
+
+/* Эффект нажатия (вдавленности) */
+.submit-button:hover, .book-button:hover:not(:disabled), .delete-button:hover {
+    box-shadow: 
+        inset 4px 4px 8px var(--shadow-dark),
+        inset -4px -4px 8px var(--shadow-light);
+    color: var(--text-color); 
+}
+.submit-button, #admin-toggle-btn {
+    grid-column: span 1; 
+    background-color: var(--accent-color);
+    color: white;
+}
+.submit-button:hover, #admin-toggle-btn:hover {
+     background-color: var(--accent-color);
+     color: var(--shadow-light);
+}
+
+/* Отдельные стили для кнопок в карточках */
+.book-button {
+    width: 100%;
+    margin-top: 15px;
+    color: var(--accent-color);
+}
+.delete-button {
+    background-color: #dc3545; 
+    color: white;
+    font-size: 0.8em;
+    padding: 6px 10px;
+}
+.delete-button:hover {
+    background-color: #c82333; 
+}
+
+.book-button:disabled {
+    background: var(--main-bg-color);
+    color: var(--shadow-dark);
+    cursor: not-allowed;
+    box-shadow: none; /* Убираем эффект для отключенных кнопок */
+}
+
+
+/* --- Стили для Расписания (Карточки) --- */
+.schedule-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px; /* Увеличиваем расстояние между карточками */
+    padding: 10px 0;
+}
+
+.training-card {
+    padding: 20px;
+    border-radius: 12px;
+    background: var(--main-bg-color);
+    
+    /* Эффект Неоморфизма (выпуклости) */
+    box-shadow: 
+        6px 6px 12px var(--shadow-dark),
+        -6px -6px 12px var(--shadow-light);
+}
+
+.training-card h3 {
+    color: var(--accent-color);
+    border-bottom: 1px solid var(--shadow-dark);
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+.details p, .details ul li {
+    font-size: 1em;
+}
+
+/* Статус бронирования */
+.booking-status {
+    margin-top: 15px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    font-weight: bold;
+    text-align: center;
+    
+    /* Вдавленный эффект для статуса */
+    background: var(--main-bg-color);
+    box-shadow: 
+        inset 3px 3px 6px var(--shadow-dark),
+        inset -3px -3px 6px var(--shadow-light);
+}
+
+.status-available {
+    color: #28a745; /* Зеленый */
+}
+
+.status-full {
+    color: #dc3545; /* Красный */
+}
+
+/* Скрытые элементы */
+.hidden {
+    display: none !important;
+}
+
+/* Линия-разделитель */
+hr {
+    max-width: 900px;
+    margin: 40px auto;
+    border: 0;
+    height: 1px;
+    /* Стиль линии, соответствующий дизайну */
+    background-color: var(--shadow-dark);
+    opacity: 0.5;
+}
