@@ -1,11 +1,13 @@
-/* --- Общие стили и сброс --- */
+/* --- Стили Неоморфизма (Soft UI) --- */
 :root {
-    --primary-color: #007bff; /* Яркий синий (Акцент) */
-    --secondary-color: #6c757d; /* Серый */
-    --success-color: #28a745; /* Зеленый (Успех) */
-    --background-light: #f8f9fa; /* Светлый фон */
-    --card-background: #ffffff; /* Белый фон карточек */
-    --border-color: #e9ecef;
+    /* Основной, мягкий фон */
+    --main-bg-color: #e0e5ec;
+    /* Основной цвет для теней (темный и светлый) */
+    --shadow-light: #ffffff;
+    --shadow-dark: #a3b1c6;
+    /* Акцентный цвет (фиолетовый) */
+    --accent-color: #6d5bba; 
+    --text-color: #555;
     --font-family: 'Arial', sans-serif;
 }
 
@@ -13,177 +15,181 @@ body {
     font-family: var(--font-family);
     margin: 0;
     padding: 0;
-    background-color: var(--background-light);
-    color: #343a40;
+    background-color: var(--main-bg-color);
+    color: var(--text-color);
     line-height: 1.6;
-    /* ! НОВЫЕ СТИЛИ ДЛЯ ЦЕНТРИРОВАНИЯ ! */
+    /* ! ИСПРАВЛЕННОЕ ЦЕНТРИРОВАНИЕ ! */
     display: flex;
     flex-direction: column;
     align-items: center; 
 }
 
+/* --- Основные контейнеры (Header, Section) --- */
 .header, .admin-section, .schedule-section {
-    /* Максимальная ширина, чтобы не растягивалось на весь экран */
     max-width: 900px;
-    width: 90%; /* Используем 90% ширины на маленьких экранах */
-    /* ! ГЛАВНОЕ ДЛЯ ЦЕНТРИРОВАНИЯ ! */
-    margin: 20px auto; 
-    padding: 20px;
-    background: var(--card-background);
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: 90%; 
+    margin: 20px auto;
+    padding: 30px;
+    border-radius: 12px;
+    background: var(--main-bg-color);
+    
+    /* Эффект Неоморфизма (вдавленности) */
+    box-shadow: 
+        9px 9px 16px var(--shadow-dark),
+        -9px -9px 16px var(--shadow-light);
 }
 
 h1, h2 {
-    color: var(--primary-color);
+    color: var(--accent-color);
     text-align: center;
     margin-top: 0;
+    font-weight: 600;
 }
 
-/* --- Класс для скрытия элементов админки по умолчанию --- */
+/* --- Класс для скрытия элементов --- */
 .hidden {
     display: none !important;
 }
 
-/* --- Стили для Формы (Админ-секция) --- */
+/* --- Стили для Формы и Полей Ввода --- */
 .training-form {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 15px;
+    gap: 20px;
     align-items: flex-end; 
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: bold;
 }
 
 .form-group input {
     width: 100%;
-    padding: 10px;
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
+    padding: 12px 15px;
+    border: none;
+    border-radius: 8px;
     box-sizing: border-box; 
+    
+    /* Эффект Неоморфизма (вдавленности) */
+    background: var(--main-bg-color);
+    box-shadow: 
+        inset 5px 5px 10px var(--shadow-dark),
+        inset -5px -5px 10px var(--shadow-light);
+    color: var(--text-color);
+}
+
+/* --- Стили для Кнопок (Выпуклость) --- */
+.submit-button, .book-button, .delete-button, #admin-toggle-btn {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    transition: all 0.2s ease;
+    
+    /* Базовый выпуклый эффект */
+    background: var(--main-bg-color);
+    box-shadow: 
+        6px 6px 12px var(--shadow-dark),
+        -6px -6px 12px var(--shadow-light);
+    color: var(--accent-color);
+}
+
+/* Эффект нажатия (вдавленности) */
+.submit-button:hover, .book-button:hover:not(:disabled), .delete-button:hover, #admin-toggle-btn:hover {
+    box-shadow: 
+        inset 4px 4px 8px var(--shadow-dark),
+        inset -4px -4px 8px var(--shadow-light);
+    color: var(--text-color); 
 }
 
 .submit-button, #admin-toggle-btn {
-    background-color: var(--success-color);
+    background-color: var(--accent-color);
     color: white;
-    padding: 10px 15px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 16px;
-    transition: background-color 0.2s;
 }
 
 .submit-button:hover, #admin-toggle-btn:hover {
-    background-color: #1e7e34;
+     background-color: var(--accent-color);
+     color: var(--shadow-light);
 }
+
+/* Отдельные стили для кнопок в карточках */
+.book-button {
+    width: 100%;
+    margin-top: 15px;
+    color: var(--accent-color);
+}
+.delete-button {
+    background-color: #dc3545; 
+    color: white;
+    font-size: 0.8em;
+    padding: 6px 10px;
+}
+.delete-button:hover {
+    background-color: #c82333; 
+}
+
+.book-button:disabled {
+    background: var(--main-bg-color);
+    color: var(--shadow-dark);
+    cursor: not-allowed;
+    box-shadow: none; 
+}
+
 
 /* --- Стили для Расписания (Карточки) --- */
 .schedule-list {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 20px;
+    gap: 30px; 
     padding: 10px 0;
 }
 
 .training-card {
-    background: var(--card-background);
-    padding: 15px;
-    border-radius: 6px;
-    /* Яркая вертикальная линия */
-    border-left: 5px solid var(--primary-color); 
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    padding: 20px;
+    border-radius: 12px;
+    background: var(--main-bg-color);
+    
+    /* Эффект Неоморфизма (выпуклости) */
+    box-shadow: 
+        6px 6px 12px var(--shadow-dark),
+        -6px -6px 12px var(--shadow-light);
 }
 
 .training-card h3 {
-    margin: 0 0 10px 0;
-    color: var(--primary-color);
-    font-size: 1.2em;
+    color: var(--accent-color);
+    border-bottom: 1px solid var(--shadow-dark);
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+    text-align: left;
 }
 
-.details p {
-    margin: 5px 0;
-    font-size: 0.9em;
-}
-
-.details ul {
-    list-style: none;
-    padding-left: 0;
-    margin-top: 5px;
-    font-size: 0.9em;
-}
-
-.details ul li {
-    padding: 2px 0;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
+/* Статус бронирования */
 .booking-status {
-    margin-top: 10px;
-    padding: 5px 10px;
-    border-radius: 4px;
+    margin-top: 15px;
+    padding: 8px 10px;
+    border-radius: 8px;
     font-weight: bold;
     text-align: center;
+    
+    /* Вдавленный эффект для статуса */
+    background: var(--main-bg-color);
+    box-shadow: 
+        inset 3px 3px 6px var(--shadow-dark),
+        inset -3px -3px 6px var(--shadow-light);
 }
 
 .status-available {
-    background-color: #d4edda;
-    color: var(--success-color);
+    color: #28a745; 
 }
 
 .status-full {
-    background-color: #f8d7da;
-    color: #dc3545; /* Красный */
+    color: #dc3545; 
 }
 
-.book-button {
-    width: 100%;
-    padding: 8px;
-    margin-top: 10px;
-    background-color: var(--primary-color);
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-
-.book-button:hover:not(:disabled) {
-    background-color: #0056b3;
-}
-
-.book-button:disabled {
-    background-color: var(--secondary-color);
-    cursor: not-allowed;
-}
-
-/* Стили для кнопок удаления */
-.delete-button {
-    background-color: #dc3545; /* Красный цвет */
-    color: white;
-    padding: 5px 10px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.8em;
-    transition: background-color 0.2s;
-    margin-left: 10px;
-}
-.delete-button:hover {
-    background-color: #c82333;
-}
-
-/* Стили для линии-разделителя */
+/* Линия-разделитель */
 hr {
     max-width: 900px;
-    margin: 30px auto;
+    margin: 40px auto;
     border: 0;
     height: 1px;
-    background-image: linear-gradient(to right, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0));
+    background-color: var(--shadow-dark);
+    opacity: 0.5;
 }
