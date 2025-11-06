@@ -1,6 +1,6 @@
 // --- 1. Константы, Инициализация Firebase и Подключение к БД ---
 
-// !!! 🚨 ВАША КОНФИГУРАЦИЯ FIREBASE 🚨 !!!
+// !!! 🚨 ВАША КОНФИГУРАЦИЯ FIREBASE (КЛЮЧИ) 🚨 !!!
 const firebaseConfig = {
     apiKey: "AIzaSyDtQuQwe6qWuHZI8WfCmHMdoo0MA1hR0hM",
     authDomain: "crm-ano-dvizh11.firebaseapp.com",
@@ -15,6 +15,8 @@ const firebaseConfig = {
 const app = firebase.initializeApp(firebaseConfig);
 // Получаем ссылку на базу данных Firestore
 const db = app.firestore();
+// НОВАЯ СТРОКА: Получаем ссылку на сервис Аутентификации
+const auth = app.auth(); 
 // Ссылка на нашу коллекцию с расписанием
 const trainingsRef = db.collection('trainings');
 
@@ -26,27 +28,42 @@ const adminButton = document.getElementById('admin-toggle-btn');
 let isAdminMode = false;
 
 
-// --- 2. Логика АДМИНИСТРИРОВАНИЯ ---
+// --- 2. Логика АДМИНИСТРИРОВАНИЯ (ВХОД ЧЕРЕЗ FIREBASE AUTH) ---
 
-// Функция для переключения режима
 adminButton.addEventListener('click', function() {
-    const password = 'admin'; // АДМИН-ПАРОЛЬ
     
     if (!isAdminMode) {
-        const enteredPassword = prompt('Введите пароль администратора:');
-        if (enteredPassword === password) {
-            isAdminMode = true;
-            adminContainer.classList.remove('hidden'); 
-            adminButton.textContent = 'Выйти из режима Администратора';
-            alert('Вход выполнен. Вы в режиме Администратора.');
-        } else if (enteredPassword !== null) {
-            alert('Неверный пароль.');
-        }
+        // --- Вход в режим админа (Используем Firebase Auth) ---
+        const email = prompt('Введите email Администратора:');
+        const password = prompt('Введите пароль Администратора:');
+        
+        if (!email || !password) return alert('Вход отменен.');
+
+        auth.signInWithEmailAndPassword(email, password)
+            .then((userCredential) => {
+                // Вход успешен
+                isAdminMode = true;
+                adminContainer.classList.remove('hidden'); 
+                adminButton.textContent = 'Выйти из режима Администратора';
+                alert(`Вход выполнен. Добро пожаловать, ${userCredential.user.email}!`);
+            })
+            .catch((error) => {
+                // Вход неуспешен
+                console.error("Ошибка входа:", error);
+                alert('Ошибка входа. Проверьте логин/пароль.');
+            });
+
     } else {
-        isAdminMode = false;
-        adminContainer.classList.add('hidden'); 
-        adminButton.textContent = 'Войти в режим Администратора';
-        alert('Выход выполнен. Вы в режиме Пользователя.');
+        // --- Выход из режима админа ---
+        auth.signOut().then(() => {
+            isAdminMode = false;
+            adminContainer.classList.add('hidden'); 
+            adminButton.textContent = 'Войти в режим Администратора';
+            alert('Выход выполнен. Вы в режиме Пользователя.');
+        }).catch((error) => {
+            console.error("Ошибка выхода:", error);
+            alert('Ошибка выхода.');
+        });
     }
 });
 
@@ -55,6 +72,12 @@ adminButton.addEventListener('click', function() {
 
 form.addEventListener('submit', async function(event) { 
     event.preventDefault(); 
+    
+    // Проверка, что пользователь вошел
+    if (!auth.currentUser) {
+        alert('Действие доступно только авторизованному администратору.');
+        return;
+    }
     
     const date = document.getElementById('date').value;
     const time = document.getElementById('time').value;
@@ -67,7 +90,9 @@ form.addEventListener('submit', async function(event) {
         name,
         capacity,
         registered: [], // Массив для записей
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        // Добавляем ID администратора, который создал тренировку, для будущих правил безопасности
+        createdBy: auth.currentUser.uid 
     };
 
     try {
@@ -76,12 +101,14 @@ form.addEventListener('submit', async function(event) {
         alert('Тренировка успешно добавлена в облачную базу данных!');
     } catch (e) {
         console.error("Ошибка при добавлении документа: ", e);
-        alert('Ошибка при сохранении тренировки.');
+        // Тут вы увидите "Permission Denied", если правила не позволяют запись!
+        alert('Ошибка при сохранении тренировки. Проверьте права доступа в консоли.');
     }
 });
 
 
 // --- 4. ЛОГИКА ЗАПИСИ НА ТРЕНИРОВКУ (С FIREBASE) ---
+// (Логика не меняется, но теперь она будет работать только с открытыми правилами)
 
 async function handleBooking(trainingId) {
     const trainingRef = trainingsRef.doc(trainingId);
@@ -117,6 +144,7 @@ async function handleBooking(trainingId) {
             vkLink: vkLink.trim(),
         };
 
+        // Внимание: Здесь мы ОБНОВЛЯЕМ (update) существующий документ!
         const newRegistered = training.registered ? [...training.registered, newRegistration] : [newRegistration];
         
         transaction.update(trainingRef, { registered: newRegistered });
@@ -129,6 +157,7 @@ async function handleBooking(trainingId) {
 
 
 // --- 5. ЛОГИКА УДАЛЕНИЯ ТРЕНИРОВКИ/ЗАПИСИ (С FIREBASE) ---
+// (Логика не меняется, но она будет блокироваться правилами!)
 
 async function deleteTraining(trainingId) {
     if (confirm('Вы уверены, что хотите полностью удалить эту тренировку из базы данных?')) {
@@ -137,7 +166,7 @@ async function deleteTraining(trainingId) {
             alert('Тренировка удалена.');
         } catch (e) {
             console.error("Ошибка при удалении тренировки: ", e);
-            alert('Ошибка при удалении тренировки.');
+            alert('Ошибка при удалении тренировки. Проверьте права доступа.');
         }
     }
 }
@@ -158,16 +187,16 @@ async function deleteRegistration(trainingId, fullName) {
             alert(`Запись ${fullName} удалена.`);
         } catch (e) {
             console.error("Ошибка при удалении записи: ", e);
-            alert('Ошибка при удалении записи.');
+            alert('Ошибка при удалении записи. Проверьте права доступа.');
         }
     }
 }
 
 
 // --- 6. ЛОГИКА ОТОБРАЖЕНИЯ (СЛУШАТЕЛЬ FIREBASE) ---
+// (Полностью без изменений)
 
 function renderSchedule(schedule) {
-    
     // Сортируем расписание по дате и времени
     schedule.sort((a, b) => {
         const dateTimeA = new Date(`${a.date}T${a.time}`);
@@ -265,7 +294,7 @@ function renderSchedule(schedule) {
 }
 
 
-// --- 7. ЗАПУСК ПРИЛОЖЕНИЯ: СЛУШАТЕЛЬ FIREBASE ---
+// --- 7. ЗАПУСК ПРИЛОЖЕНИЯ: СЛУШАТЕЛЬ FIREBASE И ПРОВЕРКА ВХОДА ---
 
 function initializeApp() {
     // 1. Скрываем админ-панель
@@ -273,15 +302,28 @@ function initializeApp() {
         adminContainer.classList.add('hidden'); 
     }
     
-    // 2. Устанавливаем слушатель Firebase. 
-    // Он автоматически обновляет страницу при ЛЮБОМ изменении в БД.
+    // 2. Слушатель, который проверяет состояние входа (новый, но не влияет на работу)
+    auth.onAuthStateChanged(user => {
+        if (user) {
+            // Пользователь вошел (например, после обновления страницы)
+            isAdminMode = true;
+            adminContainer.classList.remove('hidden');
+            adminButton.textContent = 'Выйти из режима Администратора';
+        } else {
+            // Пользователь вышел
+            isAdminMode = false;
+            adminContainer.classList.add('hidden'); 
+            adminButton.textContent = 'Войти в режим Администратора';
+        }
+    });
+
+    // 3. Устанавливаем слушатель Firebase для расписания (остается прежним)
     trainingsRef.onSnapshot((querySnapshot) => {
         const schedule = [];
         querySnapshot.forEach((doc) => {
-            // Сохраняем ID документа (ключ Firebase) и все данные
             schedule.push({ id: doc.id, ...doc.data() });
         });
-        renderSchedule(schedule); // Отрисовываем расписание
+        renderSchedule(schedule); 
     }, (error) => {
         console.error("Ошибка при получении данных из Firestore: ", error);
         scheduleList.innerHTML = '<p style="text-align: center; color: red;">Ошибка загрузки расписания. Проверьте консоль.</p>';
