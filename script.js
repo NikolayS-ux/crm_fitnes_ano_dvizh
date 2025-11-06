@@ -1,91 +1,59 @@
-// --- 1. Константы и Инициализация ---
+// --- 1. Константы, Инициализация Firebase и Подключение к БД ---
 
-const STORAGE_KEY = 'trainingSchedule';
+// !!! 🚨 ВАША КОНФИГУРАЦИЯ FIREBASE 🚨 !!!
+const firebaseConfig = {
+    apiKey: "AIzaSyDtQuQwe6qWuHZI8WfCmHMdoo0MA1hR0hM",
+    authDomain: "crm-ano-dvizh11.firebaseapp.com",
+    projectId: "crm-ano-dvizh11",
+    storageBucket: "crm-ano-dvizh11.firebasestorage.app",
+    messagingSenderId: "452385590391",
+    appId: "1:452385590391:web:5372af6d4529576ce90a72",
+    measurementId: "G-GDWKJH308X"
+};
+
+// Инициализируем Firebase
+const app = firebase.initializeApp(firebaseConfig);
+// Получаем ссылку на базу данных Firestore
+const db = app.firestore();
+// Ссылка на нашу коллекцию с расписанием
+const trainingsRef = db.collection('trainings');
+
+// Теперь старые константы
 const form = document.getElementById('add-training-form');
 const scheduleList = document.getElementById('schedule-list');
-// Элементы для Админки
 const adminContainer = document.getElementById('admin-panel-container');
 const adminButton = document.getElementById('admin-toggle-btn');
-let isAdminMode = false; // Состояние режима
-
-function getSchedule() {
-    const data = localStorage.getItem(STORAGE_KEY);
-    let schedule = data ? JSON.parse(data) : [];
-    
-    // Обеспечиваем, что registered - это всегда массив
-    schedule = schedule.map(t => {
-        if (!Array.isArray(t.registered)) {
-            t.registered = []; 
-        }
-        return t;
-    });
-
-    return schedule;
-}
-
-function saveSchedule(schedule) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(schedule));
-}
+let isAdminMode = false;
 
 
 // --- 2. Логика АДМИНИСТРИРОВАНИЯ ---
 
 // Функция для переключения режима
 adminButton.addEventListener('click', function() {
-    const password = 'admin'; // !!! АДМИН-ПАРОЛЬ !!!
+    const password = 'admin'; // АДМИН-ПАРОЛЬ
     
     if (!isAdminMode) {
-        // Вход в режим админа
         const enteredPassword = prompt('Введите пароль администратора:');
         if (enteredPassword === password) {
             isAdminMode = true;
             adminContainer.classList.remove('hidden'); 
             adminButton.textContent = 'Выйти из режима Администратора';
-            renderSchedule(); 
             alert('Вход выполнен. Вы в режиме Администратора.');
         } else if (enteredPassword !== null) {
             alert('Неверный пароль.');
         }
     } else {
-        // Выход из режима админа
         isAdminMode = false;
         adminContainer.classList.add('hidden'); 
         adminButton.textContent = 'Войти в режим Администратора';
-        renderSchedule(); 
         alert('Выход выполнен. Вы в режиме Пользователя.');
     }
 });
 
 
-// Функция для удаления всей тренировки
-function deleteTraining(trainingId) {
-    if (confirm('Вы уверены, что хотите полностью удалить эту тренировку?')) {
-        let schedule = getSchedule();
-        schedule = schedule.filter(t => t.id !== trainingId);
-        saveSchedule(schedule);
-        renderSchedule();
-    }
-}
+// --- 3. ЛОГИКА ДОБАВЛЕНИЯ НОВОЙ ТРЕНИРОВКИ (С FIREBASE) ---
 
-// Функция для удаления конкретной записи человека
-function deleteRegistration(trainingId, fullName) {
-    if (confirm(`Вы уверены, что хотите удалить запись человека "${fullName}"?`)) {
-        const schedule = getSchedule();
-        const training = schedule.find(t => t.id === trainingId);
-
-        if (training) {
-            // Фильтруем массив записей, чтобы удалить нужного человека по ФИО
-            training.registered = training.registered.filter(p => p.fullName !== fullName);
-            saveSchedule(schedule);
-            renderSchedule();
-        }
-    }
-}
-
-
-// --- 3. Логика добавления новой тренировки ---
-
-form.addEventListener('submit', function(event) {
+form.addEventListener('submit', async function(event) { 
     event.preventDefault(); 
     
     const date = document.getElementById('date').value;
@@ -94,69 +62,113 @@ form.addEventListener('submit', function(event) {
     const capacity = parseInt(document.getElementById('capacity').value, 10); 
 
     const newTraining = {
-        id: Date.now(), 
         date,
         time,
         name,
         capacity,
         registered: [], // Массив для записей
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
     };
 
-    const schedule = getSchedule();
-    schedule.push(newTraining);
-    saveSchedule(schedule);
-
-    renderSchedule();
-    form.reset();
-    alert('Тренировка успешно добавлена!');
+    try {
+        await trainingsRef.add(newTraining); 
+        form.reset();
+        alert('Тренировка успешно добавлена в облачную базу данных!');
+    } catch (e) {
+        console.error("Ошибка при добавлении документа: ", e);
+        alert('Ошибка при сохранении тренировки.');
+    }
 });
 
 
-// --- 4. Логика поименной записи на тренировку ---
+// --- 4. ЛОГИКА ЗАПИСИ НА ТРЕНИРОВКУ (С FIREBASE) ---
 
-function handleBooking(trainingId) {
-    const schedule = getSchedule();
-    const trainingIndex = schedule.findIndex(t => t.id === trainingId);
-
-    if (trainingIndex !== -1) {
-        const training = schedule[trainingIndex];
+async function handleBooking(trainingId) {
+    const trainingRef = trainingsRef.doc(trainingId);
+    
+    // Используем транзакцию для безопасного изменения данных
+    return db.runTransaction(async (transaction) => {
+        const doc = await transaction.get(trainingRef);
         
-        if (training.registered.length < training.capacity) {
-            
-            // Запрашиваем данные у пользователя
-            const fullName = prompt('Пожалуйста, введите Ваше ФИО (Имя и Фамилия):');
-            if (!fullName) return; 
+        if (!doc.exists) {
+            throw "Документ не существует!";
+        }
 
-            const vkLink = prompt('Пожалуйста, введите ссылку на Вашу страницу VK (например, vk.com/id12345):');
-            if (!vkLink) return; 
-            
-            // Проверка на дубликат (игнорируем регистр)
-            if (training.registered.some(r => r.fullName.toLowerCase() === fullName.trim().toLowerCase())) {
-                alert('Вы уже записаны на эту тренировку!');
-                return;
-            }
-
-            const newRegistration = {
-                fullName: fullName.trim(),
-                vkLink: vkLink.trim(),
-            };
-
-            training.registered.push(newRegistration); 
-            saveSchedule(schedule);
-            renderSchedule(); 
-            alert(`Вы, ${fullName}, успешно записались на "${training.name}"!`);
-        } else {
+        const training = doc.data();
+        const currentRegistered = training.registered ? training.registered.length : 0;
+        
+        if (currentRegistered >= training.capacity) {
             alert('Извините, все места уже заняты.');
+            return;
+        }
+
+        const fullName = prompt('Пожалуйста, введите Ваше ФИО (Имя и Фамилия):');
+        if (!fullName) return; 
+        const vkLink = prompt('Пожалуйста, введите ссылку на Вашу страницу VK:');
+        if (!vkLink) return; 
+        
+        if (training.registered && training.registered.some(r => r.fullName.toLowerCase() === fullName.trim().toLowerCase())) {
+            alert('Вы уже записаны на эту тренировку!');
+            return;
+        }
+
+        const newRegistration = {
+            fullName: fullName.trim(),
+            vkLink: vkLink.trim(),
+        };
+
+        const newRegistered = training.registered ? [...training.registered, newRegistration] : [newRegistration];
+        
+        transaction.update(trainingRef, { registered: newRegistered });
+        alert(`Вы, ${fullName}, успешно записались на "${training.name}"!`);
+    }).catch((error) => {
+        console.error("Ошибка транзакции при записи: ", error);
+        alert("Произошла ошибка при записи. Попробуйте снова.");
+    });
+}
+
+
+// --- 5. ЛОГИКА УДАЛЕНИЯ ТРЕНИРОВКИ/ЗАПИСИ (С FIREBASE) ---
+
+async function deleteTraining(trainingId) {
+    if (confirm('Вы уверены, что хотите полностью удалить эту тренировку из базы данных?')) {
+        try {
+            await trainingsRef.doc(trainingId).delete();
+            alert('Тренировка удалена.');
+        } catch (e) {
+            console.error("Ошибка при удалении тренировки: ", e);
+            alert('Ошибка при удалении тренировки.');
+        }
+    }
+}
+
+async function deleteRegistration(trainingId, fullName) {
+    if (confirm(`Вы уверены, что хотите удалить запись человека "${fullName}"?`)) {
+        const trainingRef = trainingsRef.doc(trainingId);
+
+        try {
+            const doc = await trainingRef.get();
+            if (!doc.exists) return;
+            
+            const training = doc.data();
+            
+            const newRegistered = training.registered ? training.registered.filter(p => p.fullName !== fullName) : [];
+
+            await trainingRef.update({ registered: newRegistered });
+            alert(`Запись ${fullName} удалена.`);
+        } catch (e) {
+            console.error("Ошибка при удалении записи: ", e);
+            alert('Ошибка при удалении записи.');
         }
     }
 }
 
 
-// --- 5. Логика отображения расписания (с кнопками удаления для Админа) ---
+// --- 6. ЛОГИКА ОТОБРАЖЕНИЯ (СЛУШАТЕЛЬ FIREBASE) ---
 
-function renderSchedule() {
-    const schedule = getSchedule();
+function renderSchedule(schedule) {
     
+    // Сортируем расписание по дате и времени
     schedule.sort((a, b) => {
         const dateTimeA = new Date(`${a.date}T${a.time}`);
         const dateTimeB = new Date(`${b.date}T${b.time}`);
@@ -171,21 +183,21 @@ function renderSchedule() {
     }
 
     schedule.forEach(training => {
-        const currentRegistered = training.registered.length;
+        const trainingId = training.id; 
+        
+        const currentRegistered = training.registered ? training.registered.length : 0;
         const isFull = currentRegistered >= training.capacity;
         const availableSlots = training.capacity - currentRegistered;
         
         const statusClass = isFull ? 'status-full' : 'status-available';
         const statusText = isFull ? 'МЕСТ НЕТ' : `Свободно: ${availableSlots}`;
 
-        // Создаем HTML для списка записавшихся, добавляя кнопку удаления, если мы Админ
         let registeredListHtml = '';
         if (currentRegistered > 0) {
             registeredListHtml = '<h4>Записались:</h4><ul>';
             training.registered.forEach(person => {
-                // Если мы в режиме Админа, добавляем кнопку удаления записи
                 const deleteBtnHtml = isAdminMode 
-                    ? `<button class="delete-button delete-registration-btn" data-training-id="${training.id}" data-full-name="${person.fullName}">Удалить</button>`
+                    ? `<button class="delete-button delete-registration-btn" data-training-id="${trainingId}" data-full-name="${person.fullName}">Удалить</button>`
                     : '';
                 registeredListHtml += `
                     <li>
@@ -197,12 +209,10 @@ function renderSchedule() {
             registeredListHtml += '</ul>';
         }
 
-        // Кнопка удаления всей тренировки (только для Админа)
         const deleteTrainingBtnHtml = isAdminMode 
-            ? `<button class="delete-button delete-training-btn" style="width: 100%; margin-top: 10px;" data-id="${training.id}">Удалить Тренировку</button>`
+            ? `<button class="delete-button delete-training-btn" style="width: 100%; margin-top: 10px;" data-id="${trainingId}">Удалить Тренировку</button>`
             : '';
 
-        // Создаем HTML-карточку
         const cardHtml = `
             <div class="training-card">
                 <h3>${training.name}</h3>
@@ -215,7 +225,7 @@ function renderSchedule() {
                 <div class="booking-status ${statusClass}">${statusText}</div>
                 <button 
                     class="book-button" 
-                    data-id="${training.id}"
+                    data-id="${trainingId}"
                     ${isFull || isAdminMode ? 'disabled' : ''}
                 >
                     ${isAdminMode ? 'В режиме админа нельзя записаться' : (isFull ? 'Места закончились' : 'Записаться')}
@@ -230,25 +240,23 @@ function renderSchedule() {
     // Добавляем обработчики кнопок Записаться 
     document.querySelectorAll('.book-button:not([disabled])').forEach(button => {
         button.addEventListener('click', function() {
-            const trainingId = parseInt(this.getAttribute('data-id'), 10);
+            const trainingId = this.getAttribute('data-id'); 
             handleBooking(trainingId);
         });
     });
 
-    // Добавляем обработчики для кнопок удаления (НОВАЯ ЛОГИКА)
+    // Добавляем обработчики для кнопок удаления (только для Админа)
     if (isAdminMode) {
-        // Удаление всей тренировки
         document.querySelectorAll('.delete-training-btn').forEach(button => {
             button.addEventListener('click', function() {
-                const trainingId = parseInt(this.getAttribute('data-id'), 10);
+                const trainingId = this.getAttribute('data-id'); 
                 deleteTraining(trainingId);
             });
         });
 
-        // Удаление отдельной записи
         document.querySelectorAll('.delete-registration-btn').forEach(button => {
             button.addEventListener('click', function() {
-                const trainingId = parseInt(this.getAttribute('data-training-id'), 10);
+                const trainingId = this.getAttribute('data-training-id');
                 const fullName = this.getAttribute('data-full-name');
                 deleteRegistration(trainingId, fullName);
             });
@@ -256,15 +264,28 @@ function renderSchedule() {
     }
 }
 
-// --- НОВАЯ ФУНКЦИЯ ДЛЯ ИНИЦИАЛИЗАЦИИ ---
+
+// --- 7. ЗАПУСК ПРИЛОЖЕНИЯ: СЛУШАТЕЛЬ FIREBASE ---
+
 function initializeApp() {
-    // Гарантированно скрываем админ-панель после загрузки всех элементов
+    // 1. Скрываем админ-панель
     if (adminContainer) {
         adminContainer.classList.add('hidden'); 
     }
-    // Запускаем отображение расписания
-    renderSchedule();
+    
+    // 2. Устанавливаем слушатель Firebase. 
+    // Он автоматически обновляет страницу при ЛЮБОМ изменении в БД.
+    trainingsRef.onSnapshot((querySnapshot) => {
+        const schedule = [];
+        querySnapshot.forEach((doc) => {
+            // Сохраняем ID документа (ключ Firebase) и все данные
+            schedule.push({ id: doc.id, ...doc.data() });
+        });
+        renderSchedule(schedule); // Отрисовываем расписание
+    }, (error) => {
+        console.error("Ошибка при получении данных из Firestore: ", error);
+        scheduleList.innerHTML = '<p style="text-align: center; color: red;">Ошибка загрузки расписания. Проверьте консоль.</p>';
+    });
 }
 
-// Запускаем инициализацию при полной загрузке страницы
 document.addEventListener('DOMContentLoaded', initializeApp);
