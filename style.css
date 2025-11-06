@@ -1,10 +1,10 @@
 /* --- Общие стили и сброс --- */
 :root {
-    --primary-color: #007bff; /* Яркий синий */
-    --secondary-color: #6c757d; /* Серый */
-    --success-color: #28a745; /* Зеленый */
-    --background-light: #f8f9fa; /* Светлый фон */
-    --card-background: #ffffff; /* Белый фон карточек */
+    --primary-color: #007bff;
+    --secondary-color: #6c757d;
+    --success-color: #28a745;
+    --background-light: #f8f9fa;
+    --card-background: #ffffff;
     --border-color: #e9ecef;
     --font-family: 'Arial', sans-serif;
 }
