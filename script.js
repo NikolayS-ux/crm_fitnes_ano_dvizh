@@ -89,12 +89,16 @@ form.addEventListener('submit', async function(event) {
     const date = document.getElementById('date').value;
     const time = document.getElementById('time').value;
     const name = document.getElementById('name').value;
+    // ! НОВАЯ СТРОКА: Получаем имя тренера !
+    const trainer = document.getElementById('trainer').value; 
     const capacity = parseInt(document.getElementById('capacity').value, 10); 
 
     const newTraining = {
         date,
         time,
         name,
+        // ! НОВАЯ СТРОКА: Добавляем тренера в объект !
+        trainer, 
         capacity,
         registered: [], // Массив для записей
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
@@ -163,8 +167,7 @@ async function handleBooking(trainingId) {
 }
 
 
-// --- 5. ЛОГИКА УДАЛЕНИЯ ТРЕНИРОВКИ/ЗАПИСИ (С FIREBASE) ---
-// (Логика не меняется)
+// --- 5. ЛОГИКА УДАЛЕНИЯ И РЕДАКТИРОВАНИЯ ТРЕНИРОВКИ/ЗАПИСИ (С FIREBASE) ---
 
 async function deleteTraining(trainingId) {
     if (!auth.currentUser) return alert('Действие доступно только администратору.');
@@ -203,9 +206,57 @@ async function deleteRegistration(trainingId, fullName) {
     }
 }
 
+// ! НОВАЯ ФУНКЦИЯ: РЕДАКТИРОВАНИЕ ТРЕНИРОВКИ !
+async function editTraining(trainingId) {
+    if (!auth.currentUser) return alert('Действие доступно только администратору.');
+    
+    try {
+        const doc = await trainingsRef.doc(trainingId).get();
+        if (!doc.exists) {
+            alert('Тренировка не найдена.');
+            return;
+        }
+        
+        const training = doc.data();
+        
+        // 1. Запрашиваем новые данные через prompt
+        const newDate = prompt(`Редактирование "${training.name}". Новая дата (текущая: ${training.date}):`, training.date);
+        if (newDate === null) return; // Отмена
+        
+        const newTime = prompt(`Новое время (текущее: ${training.time}):`, training.time);
+        if (newTime === null) return;
+        
+        const newName = prompt(`Новое название (текущее: ${training.name}):`, training.name);
+        if (newName === null) return;
+        
+        // ! НОВОЕ ПОЛЕ: Тренер
+        const newTrainer = prompt(`Новый тренер (текущий: ${training.trainer}):`, training.trainer);
+        if (newTrainer === null) return;
+
+        const newCapacityStr = prompt(`Новая вместимость (текущая: ${training.capacity}):`, training.capacity);
+        if (newCapacityStr === null) return;
+        const newCapacity = parseInt(newCapacityStr, 10);
+
+        // 2. Обновляем документ в Firebase
+        await trainingsRef.doc(trainingId).update({
+            date: newDate,
+            time: newTime,
+            name: newName,
+            trainer: newTrainer, // Сохраняем тренера
+            capacity: newCapacity
+        });
+        
+        alert(`Тренировка "${newName}" успешно обновлена!`);
+
+    } catch (e) {
+        console.error("Ошибка при редактировании: ", e);
+        alert('Ошибка при обновлении тренировки. Проверьте консоль.');
+    }
+}
+
 
 // --- 6. ЛОГИКА ОТОБРАЖЕНИЯ (СЛУШАТЕЛЬ FIREBASE) ---
-// (Полностью без изменений)
+// (Включает отображение тренера и кнопок редактирования)
 
 function renderSchedule(schedule) {
     // Сортируем расписание по дате и времени
@@ -252,12 +303,18 @@ function renderSchedule(schedule) {
         const deleteTrainingBtnHtml = isAdminMode 
             ? `<button class="delete-button delete-training-btn" style="width: 100%; margin-top: 10px;" data-id="${trainingId}">Удалить Тренировку</button>`
             : '';
+            
+        // ! НОВАЯ СТРОКА: Кнопка Редактировать !
+        const editTrainingBtnHtml = isAdminMode
+            ? `<button class="submit-button edit-training-btn" style="width: 100%; margin-top: 10px; margin-left: 0; background-color: #ffc107; color: black;" data-id="${trainingId}">Редактировать</button>`
+            : '';
+            
 
         const cardHtml = `
             <div class="training-card">
                 <h3>${training.name}</h3>
                 <div class="details">
-                    <p><strong>📅 Дата:</strong> ${new Date(training.date).toLocaleDateString('ru-RU', { weekday: 'short', day: 'numeric', month: 'long' })}</p>
+                    <p><strong>👤 Тренер:</strong> ${training.trainer}</p> <p><strong>📅 Дата:</strong> ${new Date(training.date).toLocaleDateString('ru-RU', { weekday: 'short', day: 'numeric', month: 'long' })}</p>
                     <p><strong>⏰ Время:</strong> ${training.time}</p>
                     <p><strong>👥 Записано:</strong> ${currentRegistered} из ${training.capacity}</p>
                     ${registeredListHtml} 
@@ -271,7 +328,7 @@ function renderSchedule(schedule) {
                     ${isAdminMode ? 'В режиме админа нельзя записаться' : (isFull ? 'Места закончились' : 'Записаться')}
                 </button>
                 ${deleteTrainingBtnHtml}
-            </div>
+                ${editTrainingBtnHtml} </div>
         `;
 
         scheduleList.innerHTML += cardHtml;
@@ -285,12 +342,20 @@ function renderSchedule(schedule) {
         });
     });
 
-    // Добавляем обработчики для кнопок удаления (только для Админа)
+    // Добавляем обработчики для кнопок Админа
     if (isAdminMode) {
         document.querySelectorAll('.delete-training-btn').forEach(button => {
             button.addEventListener('click', function() {
                 const trainingId = this.getAttribute('data-id'); 
                 deleteTraining(trainingId);
+            });
+        });
+        
+        // ! НОВЫЙ ОБРАБОТЧИК ДЛЯ КНОПКИ РЕДАКТИРОВАТЬ !
+        document.querySelectorAll('.edit-training-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const trainingId = this.getAttribute('data-id'); 
+                editTraining(trainingId);
             });
         });
 
@@ -305,7 +370,7 @@ function renderSchedule(schedule) {
 }
 
 
-// --- 7. ЗАПУСК ПРИЛОЖЕНИЯ: СЛУШАТЕЛЬ FIREBASE И ПРОВЕРКА ВХОДА И НАСТРОЙКА VK ---
+// --- 7. ЗАПУСК ПРИЛОЖЕНИЯ: СЛУШАТЕЛЬ FIREBASE И НАСТРОЙКА VK ---
 
 function initializeApp() {
     // 1. Скрываем админ-панель
@@ -328,7 +393,7 @@ function initializeApp() {
         }
     });
 
-    // ! НОВЫЙ КОД: Устанавливаем цвет фона приложения под тему VK !
+    // ! Устанавливаем цвет фона приложения под тему VK !
     if (window.vkBridge) {
         // Мы отправляем команду, чтобы приложение выглядело нативно в VK
         vkBridge.send('VKWebAppSetViewSettings', {
