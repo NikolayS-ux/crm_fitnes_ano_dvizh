@@ -1,222 +1,214 @@
-/* --- СТАНДАРТНЫЕ СТИЛИ И ФОН --- */
+/* --- Стили Неоморфизма (Soft UI) --- */
+:root {
+    /* Основной, мягкий фон */
+    --main-bg-color: #e0e5ec;
+    /* Основной цвет для теней (темный и светлый) */
+    --shadow-light: #ffffff;
+    --shadow-dark: #a3b1c6;
+    /* Акцентный цвет (фиолетовый) */
+    --accent-color: #6d5bba; 
+    --text-color: #555;
+    --font-family: 'Arial', sans-serif;
+}
+
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-    background-color: #e0e5ec; /* Светлый фон для неоморфизма */
-    color: #333;
-    padding: 20px;
+    font-family: var(--font-family);
     margin: 0;
-    min-height: 100vh;
-}
-
-.header {
-    text-align: center;
-    margin-bottom: 30px;
-}
-
-h1 {
-    color: #333;
-    text-shadow: 1px 1px 1px rgba(255, 255, 255, 0.7);
-}
-
-hr {
-    border: none;
-    height: 1px;
-    background-color: #c8d0e7;
-    margin: 30px 0;
-}
-
-
-/* --- КОНТЕЙНЕРЫ (NEUMORPHISM) --- */
-.admin-section, .schedule-section {
-    padding: 25px;
-    margin-bottom: 30px;
-    border-radius: 12px;
-    background: #e0e5ec;
-    box-shadow: 8px 8px 16px #a3b1c6, -8px -8px 16px #ffffff; /* Главный эффект */
-}
-
-.training-card {
-    padding: 20px;
-    margin-bottom: 20px;
-    border-radius: 12px;
-    background: #e0e5ec;
-    /* Внутренний эффект для карточек */
-    box-shadow: inset 5px 5px 10px #c1c6d3, inset -5px -5px 10px #ffffff;
-    
-    /* !!! ИСПРАВЛЕНИЕ ЦЕНТРОВКИ: Flexbox для выравнивания содержимого по центру !!! */
-    display: flex; 
+    padding: 0;
+    background-color: var(--main-bg-color);
+    color: var(--text-color);
+    line-height: 1.6;
+    /* ! ОБЩАЯ ЦЕНТРОВКА СТРАНИЦЫ: Сохраняем ! */
+    display: flex;
     flex-direction: column;
     align-items: center; 
 }
 
-.schedule-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 20px;
+/* --- Основные контейнеры (Header, Section) --- */
+.header, .admin-section, .schedule-section {
+    max-width: 900px;
+    width: 90%; 
+    margin: 20px auto;
+    padding: 30px;
+    border-radius: 12px;
+    background: var(--main-bg-color);
+    
+    /* Эффект Неоморфизма (вдавленности) */
+    box-shadow: 
+        9px 9px 16px var(--shadow-dark),
+        -9px -9px 16px var(--shadow-light);
 }
 
-
-/* --- ФОРМА И ПОЛЯ ВВОДА --- */
-.training-form {
-    width: 100%;
-}
-
-.form-group {
-    margin-bottom: 15px;
-}
-
-label {
-    display: block;
-    margin-bottom: 5px;
+h1, h2 {
+    color: var(--accent-color);
+    text-align: center;
+    margin-top: 0;
     font-weight: 600;
-    color: #555;
 }
 
-input[type="text"], input[type="date"], input[type="time"], input[type="number"] {
+/* --- Класс для скрытия элементов --- */
+.hidden {
+    display: none !important;
+}
+
+/* --- Стили для Формы и Полей Ввода --- */
+.training-form {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    align-items: flex-end; 
+}
+
+.form-group input {
     width: 100%;
-    padding: 12px;
+    padding: 12px 15px;
     border: none;
     border-radius: 8px;
-    background: #e0e5ec;
-    box-shadow: inset 2px 2px 5px #c8d0e7, inset -2px -2px 5px #ffffff;
-    box-sizing: border-box;
-    color: #333;
-    font-size: 1em;
+    box-sizing: border-box; 
+    
+    /* Эффект Неоморфизма (вдавленности) */
+    background: var(--main-bg-color);
+    box-shadow: 
+        inset 5px 5px 10px var(--shadow-dark),
+        inset -5px -5px 10px var(--shadow-light);
+    color: var(--text-color);
 }
 
-
-/* --- КНОПКИ (NEUMORPHISM) --- */
-.submit-button, .book-button {
-    padding: 12px 25px;
+/* --- Стили для Кнопок (Выпуклость) --- */
+.submit-button, .book-button, .delete-button, #admin-toggle-btn {
+    padding: 12px 20px;
     border: none;
     border-radius: 10px;
     cursor: pointer;
-    font-weight: 700;
+    font-size: 16px;
+    font-weight: bold;
     transition: all 0.2s ease;
-    text-align: center;
-    margin-top: 15px;
-    width: 100%; /* Гарантируем полную ширину для центровки */
     
-    /* Общий стиль для нажатия */
-    box-shadow: 6px 6px 12px #a3b1c6, -6px -6px 12px #ffffff;
+    /* Базовый выпуклый эффект */
+    background: var(--main-bg-color);
+    box-shadow: 
+        6px 6px 12px var(--shadow-dark),
+        -6px -6px 12px var(--shadow-light);
+    color: var(--accent-color);
 }
 
-/* Кнопка "Создать Тренировку" / "Войти" */
-.submit-button {
-    background-color: #007bff; /* Синий (Акцентный цвет) */
+/* Эффект нажатия (вдавленности) */
+.submit-button:hover, .book-button:hover:not(:disabled), .delete-button:hover, #admin-toggle-btn:hover {
+    box-shadow: 
+        inset 4px 4px 8px var(--shadow-dark),
+        inset -4px -4px 8px var(--shadow-light);
+    color: var(--text-color); 
+}
+
+.submit-button, #admin-toggle-btn {
+    background-color: var(--accent-color);
     color: white;
 }
 
-.submit-button:hover {
-    box-shadow: 4px 4px 8px #a3b1c6, -4px -4px 8px #ffffff;
+.submit-button:hover, #admin-toggle-btn:hover {
+     background-color: var(--accent-color);
+     color: var(--shadow-light);
 }
 
-.submit-button:active {
-    box-shadow: inset 2px 2px 5px #a3b1c6, inset -2px -2px 5px #ffffff;
-}
-
-/* Кнопка "Записаться" */
+/* Отдельные стили для кнопок в карточках */
 .book-button {
-    background-color: #38c172; /* Зеленый */
-    color: white;
+    width: 100%;
+    margin-top: 15px;
+    color: var(--accent-color);
 }
 
-.book-button:hover {
-    background-color: #2da863;
+/* --- Стили для Расписания (Карточки) --- */
+.schedule-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px; 
+    padding: 10px 0;
 }
 
-.book-button[disabled] {
-    background-color: #c8d0e7;
-    color: #8c95a4;
-    cursor: not-allowed;
-    box-shadow: inset 2px 2px 5px #c8d0e7, inset -2px -2px 5px #ffffff;
+.training-card {
+    padding: 20px;
+    border-radius: 12px;
+    background: var(--main-bg-color);
+    
+    /* Эффект Неоморфизма (выпуклости) */
+    box-shadow: 
+        6px 6px 12px var(--shadow-dark),
+        -6px -6px 12px var(--shadow-light);
+    
+    /* !!! ИСПРАВЛЕНИЕ ДЛЯ КАРТОЧЕК: Делаем их Flex-контейнером для выравнивания кнопок, но без центровки текста !!! */
+    display: flex; 
+    flex-direction: column;
+    /* align-items: center; <--- Мы не используем эту строку, чтобы текст остался слева! */
 }
 
-
-/* --- ИНФОРМАЦИОННЫЕ БЛОКИ --- */
-.details, .booking-status {
-    width: 100%; /* Убедимся, что информация тоже занимает всю ширину */
+.training-card h3 {
+    color: var(--accent-color);
+    border-bottom: 1px solid var(--shadow-dark);
+    padding-bottom: 10px;
+    margin-bottom: 15px;
     text-align: left;
 }
 
-.details p {
-    margin: 5px 0;
-}
-
-.details strong {
-    color: #444;
-}
-
+/* Статус бронирования */
 .booking-status {
-    padding: 8px;
+    margin-top: 15px;
+    padding: 8px 10px;
     border-radius: 8px;
-    font-weight: 700;
-    margin-top: 10px;
+    font-weight: bold;
     text-align: center;
-    color: white;
+    width: 100%; /* Гарантируем полную ширину */
+    box-sizing: border-box;
+    
+    /* Вдавленный эффект для статуса */
+    background: var(--main-bg-color);
+    box-shadow: 
+        inset 3px 3px 6px var(--shadow-dark),
+        inset -3px -3px 6px var(--shadow-light);
 }
 
 .status-available {
-    background-color: #38c172;
+    color: #28a745; 
 }
 
 .status-full {
-    background-color: #e3342f;
+    color: #dc3545; 
 }
 
-
-/* --- СТИЛИ АДМИНКИ --- */
-
-.admin-panel-container.hidden {
-    display: none;
-}
-
-.training-card ul {
-    list-style: none;
-    padding: 0;
-    margin-top: 10px;
-    width: 100%; /* Списки должны занимать всю ширину */
-}
-
-.training-card ul li {
-    background: #ffffff;
-    padding: 8px;
-    border-radius: 6px;
-    margin-bottom: 5px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.9em;
-    box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.05);
-}
-
-.training-card ul li a {
-    color: #007bff;
-    text-decoration: none;
-    font-weight: 600;
+/* Линия-разделитель */
+hr {
+    max-width: 900px;
+    margin: 40px auto;
+    border: 0;
+    height: 1px;
+    background-color: var(--shadow-dark);
+    opacity: 0.5;
 }
 
 
 /* ======================================================= */
-/* !!! НОВЫЕ СТИЛИ ДЛЯ КНОПОК АДМИНА !!!                  */
+/* !!! НОВЫЕ СТИЛИ ДЛЯ КНОПОК АДМИНА (ПЕРЕОПРЕДЕЛЕНИЕ) !!!*/
 /* ======================================================= */
 
 /* --- 1. КНОПКА РЕДАКТИРОВАТЬ (Белая с синим текстом) --- */
 .edit-training-btn {
+    /* Наследует все от .submit-button, но меняет цвет */
     background-color: #ffffff !important; 
     color: #007bff !important; 
     border: 1px solid #007bff !important; 
     box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1) !important; 
-    width: 100%; /* ГАРАНТИЯ ЦЕНТРОВКИ */
+    width: 100%; /* ГАРАНТИЯ ПОЛНОЙ ШИРИНЫ */
     margin-top: 10px;
     padding: 12px 25px; 
     border-radius: 10px; 
+    /* Убираем конфликт с общим :hover */
+    transition: background-color 0.2s; 
 }
 
 .edit-training-btn:hover {
     background-color: #e2f2ff !important; 
+    color: #007bff !important;
+    box-shadow: 4px 4px 8px var(--shadow-dark), -4px -4px 8px var(--shadow-light); /* Возвращаем выпуклый эффект */
 }
-
 
 /* --- 2. КНОПКА УДАЛИТЬ ТРЕНИРОВКУ (Полупрозрачный красный) --- */
 .delete-training-btn {
@@ -224,21 +216,24 @@ input[type="text"], input[type="date"], input[type="time"], input[type="number"]
     color: #dc3545 !important; 
     border: 1px solid #dc3545 !important; 
     box-shadow: none !important; 
-    width: 100%; /* ГАРАНТИЯ ЦЕНТРОВКИ */
+    width: 100%; /* ГАРАНТИЯ ПОЛНОЙ ШИРИНЫ */
     margin-top: 10px;
     font-size: 0.9em; 
     padding: 12px 25px; 
     border-radius: 10px; 
+    transition: all 0.2s ease;
 }
 
 .delete-training-btn:hover {
     background-color: rgba(255, 0, 0, 0.2) !important; 
+    color: #dc3545 !important;
+    box-shadow: 4px 4px 8px var(--shadow-dark), -4px -4px 8px var(--shadow-light); /* Возвращаем выпуклый эффект */
 }
 
 
 /* --- 3. КНОПКА УДАЛИТЬ ЗАПИСЬ (Маленькая, полупрозрачная) --- */
-.delete-registration-btn {
-    /* Переопределяем стили для маленькой кнопки */
+/* Переопределяем старый .delete-button, который был для удаления тренировки */
+.delete-registration-btn { 
     background-color: rgba(255, 0, 0, 0.05) !important; 
     color: #dc3545 !important;
     border: 1px solid rgba(220, 53, 69, 0.5) !important;
@@ -255,12 +250,7 @@ input[type="text"], input[type="date"], input[type="time"], input[type="number"]
     background-color: rgba(255, 0, 0, 0.15) !important;
 }
 
-/* Адаптация для мобильных устройств */
-@media (max-width: 600px) {
-    body {
-        padding: 10px;
-    }
-    .admin-section, .schedule-section {
-        padding: 15px;
-    }
+/* Скрываем старый стиль .delete-button, так как мы используем .delete-training-btn и .delete-registration-btn */
+.delete-button {
+    display: none; 
 }
