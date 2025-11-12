@@ -1,436 +1,242 @@
-// ! НОВЫЕ СТРОКИ: Инициализация VK Bridge !
-// Этот код запускает обмен данными между вашим приложением и VK.
-if (window.vkBridge) {
-    vkBridge.send('VKWebAppInit');
-}
+document.addEventListener('DOMContentLoaded', () => {
+    const adminToggleButton = document.getElementById('admin-toggle-btn');
+    const adminSection = document.getElementById('admin-section');
+    const trainingForm = document.getElementById('training-form');
+    const scheduleList = document.getElementById('schedule-list');
 
+    let isAdminMode = false;
+    let trainings = JSON.parse(localStorage.getItem('trainings')) || [];
 
-// --- 1. Константы, Инициализация Firebase и Подключение к БД ---
+    // Функция для переключения режима администратора
+    adminToggleButton.addEventListener('click', () => {
+        isAdminMode = !isAdminMode;
+        adminSection.classList.toggle('hidden', !isAdminMode);
+        adminToggleButton.textContent = isAdminMode ? 'Выйти из режима Администратора' : 'Войти в режим Администратора';
+        renderSchedule(); // Перерендеринг для показа/скрытия кнопок админа
+    });
 
-// !!! 🚨 ВАША КОНФИГУРАЦИЯ FIREBASE (КЛЮЧИ) 🚨 !!!
-const firebaseConfig = {
-    apiKey: "AIzaSyDtQuQwe6qWuHZI8WfCmHMdoo0MA1hR0hM",
-    authDomain: "crm-ano-dvizh11.firebaseapp.com",
-    projectId: "crm-ano-dvizh11",
-    storageBucket: "crm-ano-dvizh11.firebaseapp.com",
-    messagingSenderId: "452385590391",
-    appId: "1:452385590391:web:5372af6d4529576ce90a72",
-    measurementId: "G-GDWKJH308X"
-};
-
-// Инициализируем Firebase
-const app = firebase.initializeApp(firebaseConfig);
-// Получаем ссылку на базу данных Firestore
-const db = app.firestore();
-// Получаем ссылку на сервис Аутентификации
-const auth = app.auth(); 
-// Ссылка на нашу коллекцию с расписанием
-const trainingsRef = db.collection('trainings');
-
-// Теперь старые константы
-const form = document.getElementById('add-training-form');
-const scheduleList = document.getElementById('schedule-list');
-const adminContainer = document.getElementById('admin-panel-container');
-const adminButton = document.getElementById('admin-toggle-btn');
-let isAdminMode = false;
-
-
-// --- 2. Логика АДМИНИСТРИРОВАНИЯ (ВХОД ЧЕРЕЗ FIREBASE AUTH) ---
-
-adminButton.addEventListener('click', function() {
-    
-    if (!isAdminMode) {
-        // --- Вход в режим админа (Используем Firebase Auth) ---
-        const email = prompt('Введите email Администратора:');
-        const password = prompt('Введите пароль Администратора:');
+    // Функция для добавления/редактирования тренировки
+    trainingForm.addEventListener('submit', (e) => {
+        e.preventDefault();
         
-        if (!email || !password) return alert('Вход отменен.');
+        const trainingId = document.getElementById('training-id').value;
+        const name = document.getElementById('training-name').value;
+        const trainer = document.getElementById('training-trainer').value;
+        const date = document.getElementById('training-date').value;
+        const time = document.getElementById('training-time').value;
+        const maxAttendees = parseInt(document.getElementById('training-max-attendees').value);
 
-        auth.signInWithEmailAndPassword(email, password)
-            .then((userCredential) => {
-                // Вход успешен
-                isAdminMode = true;
-                adminContainer.classList.remove('hidden'); 
-                adminButton.textContent = 'Выйти из режима Администратора';
-                alert(`Вход выполнен. Добро пожаловать, ${userCredential.user.email}!`);
-            })
-            .catch((error) => {
-                // Вход неуспешен
-                console.error("Ошибка входа:", error);
-                alert('Ошибка входа. Проверьте логин/пароль.');
-            });
-
-    } else {
-        // --- Выход из режима админа ---
-        auth.signOut().then(() => {
-            isAdminMode = false;
-            adminContainer.classList.add('hidden'); 
-            adminButton.textContent = 'Войти в режим Администратора';
-            alert('Выход выполнен. Вы в режиме Пользователя.');
-        }).catch((error) => {
-            console.error("Ошибка выхода:", error);
-            alert('Ошибка выхода.');
-        });
-    }
-});
-
-
-// --- 3. ЛОГИКА ДОБАВЛЕНИЯ НОВОЙ ТРЕНИРОВКИ (С FIREBASE) ---
-
-form.addEventListener('submit', async function(event) { 
-    event.preventDefault(); 
-    
-    // Проверка, что пользователь вошел
-    if (!auth.currentUser) {
-        alert('Действие доступно только авторизованному администратору.');
-        return;
-    }
-    
-    const date = document.getElementById('date').value;
-    const time = document.getElementById('time').value;
-    const name = document.getElementById('name').value;
-    const trainer = document.getElementById('trainer').value; 
-    const capacity = parseInt(document.getElementById('capacity').value, 10); 
-
-    const newTraining = {
-        date,
-        time,
-        name,
-        trainer, 
-        capacity,
-        registered: [], // Массив для записей
-        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-        createdBy: auth.currentUser.uid 
-    };
-
-    try {
-        await trainingsRef.add(newTraining); 
-        form.reset();
-        alert('Тренировка успешно добавлена в облачную базу данных!');
-    } catch (e) {
-        console.error("Ошибка при добавлении документа: ", e);
-        alert('Ошибка при сохранении тренировки. Проверьте права доступа в консоли.');
-    }
-});
-
-
-// --- 4. ЛОГИКА ЗАПИСИ НА ТРЕНИРОВКУ (С FIREBASE) ---
-
-async function handleBooking(trainingId) {
-    const trainingRef = trainingsRef.doc(trainingId);
-    
-    // 1. Получение данных пользователя из VK Bridge (ТОЛЬКО ЕСЛИ ВНУТРИ VK)
-    let fullName = null;
-    let vkLink = null;
-    let vkUserId = null; // Будем использовать ID для уникальности записи
-
-    if (window.vkBridge) {
-        try {
-            const user = await vkBridge.send('VKWebAppGetUserInfo');
-            // Собираем данные
-            fullName = `${user.first_name} ${user.last_name}`;
-            vkLink = `https://vk.com/id${user.id}`;
-            vkUserId = user.id;
-
-        } catch (error) {
-            console.error("Ошибка VK Bridge, требуется ручной ввод:", error);
-            // Если VK Bridge не сработал или пользователь вне VK, переходим к ручному вводу
-            fullName = prompt('Пожалуйста, введите Ваше ФИО (Имя и Фамилия):');
-            if (!fullName) return; 
-            vkLink = prompt('Пожалуйста, введите ссылку на Вашу страницу VK:');
-            if (!vkLink) return; 
-        }
-    } else {
-        // Если пользователь не в VK Mini App (открыл через браузер), запрашиваем вручную
-        fullName = prompt('Пожалуйста, введите Ваше ФИО (Имя и Фамилия):');
-        if (!fullName) return; 
-        vkLink = prompt('Пожалуйста, введите ссылку на Вашу страницу VK:');
-        if (!vkLink) return; 
-    }
-
-    // Если данные получены, запускаем транзакцию
-    return db.runTransaction(async (transaction) => {
-        const doc = await transaction.get(trainingRef);
-        
-        if (!doc.exists) {
-            throw "Документ не существует!";
-        }
-
-        const training = doc.data();
-        const currentRegistered = training.registered ? training.registered.length : 0;
-        
-        if (currentRegistered >= training.capacity) {
-            alert('Извините, все места уже заняты.');
-            return;
-        }
-        
-        // 2. Проверка, записан ли уже этот пользователь (по ID, если он есть)
-        if (vkUserId && training.registered && training.registered.some(r => r.vkUserId === vkUserId)) {
-             alert('Вы уже записаны на эту тренировку!');
-             return;
-        } 
-        // Если ID нет (ручной ввод), проверяем по ФИО
-        if (!vkUserId && training.registered && training.registered.some(r => r.fullName.toLowerCase() === fullName.trim().toLowerCase())) {
-            alert('Вы уже записаны на эту тренировку!');
+        if (!name || !trainer || !date || !time || isNaN(maxAttendees) || maxAttendees <= 0) {
+            alert('Пожалуйста, заполните все поля корректно.');
             return;
         }
 
-        const newRegistration = {
-            fullName: fullName.trim(),
-            vkLink: vkLink.trim(),
-            vkUserId: vkUserId // Сохраняем ID для надежной проверки дубликатов
+        const newTraining = {
+            id: trainingId || Date.now().toString(), // Генерируем ID, если его нет (для новой тренировки)
+            name,
+            trainer,
+            date,
+            time,
+            maxAttendees,
+            attendees: []
         };
 
-        const newRegistered = training.registered ? [...training.registered, newRegistration] : [newRegistration];
-        
-        transaction.update(trainingRef, { registered: newRegistered });
-        alert(`Вы, ${fullName}, успешно записались на "${training.name}"!`);
-    }).catch((error) => {
-        console.error("Ошибка транзакции при записи: ", error);
-        alert("Произошла ошибка при записи. Попробуйте снова.");
-    });
-}
-
-
-// --- 5. ЛОГИКА УДАЛЕНИЯ И РЕДАКТИРОВАНИЯ ТРЕНИРОВКИ/ЗАПИСИ (С FIREBASE) ---
-
-async function deleteTraining(trainingId) {
-    if (!auth.currentUser) return alert('Действие доступно только администратору.');
-    
-    if (confirm('Вы уверены, что хотите полностью удалить эту тренировку из базы данных?')) {
-        try {
-            await trainingsRef.doc(trainingId).delete();
-            alert('Тренировка удалена.');
-        } catch (e) {
-            console.error("Ошибка при удалении тренировки: ", e);
-            alert('Ошибка при удалении тренировки. Проверьте права доступа.');
+        if (trainingId) {
+            // Редактирование существующей тренировки
+            const index = trainings.findIndex(t => t.id === trainingId);
+            if (index !== -1) {
+                newTraining.attendees = trainings[index].attendees; // Сохраняем существующих посетителей
+                trainings[index] = newTraining;
+            }
+        } else {
+            // Добавление новой тренировки
+            trainings.push(newTraining);
         }
-    }
-}
 
-async function deleteRegistration(trainingId, fullName, vkUserIdToDelete) {
-    if (!auth.currentUser) return alert('Действие доступно только администратору.');
-
-    if (confirm(`Вы уверены, что хотите удалить запись человека "${fullName}"?`)) {
-        const trainingRef = trainingsRef.doc(trainingId);
-
-        try {
-            const doc = await trainingRef.get();
-            if (!doc.exists) return;
-            
-            const training = doc.data();
-            
-            const newRegistered = training.registered ? training.registered.filter(p => {
-                if (vkUserIdToDelete) {
-                    return p.vkUserId !== vkUserIdToDelete;
-                }
-                return p.fullName !== fullName;
-            }) : [];
-
-            await trainingRef.update({ registered: newRegistered });
-            alert(`Запись ${fullName} удалена.`);
-        } catch (e) {
-            console.error("Ошибка при удалении записи: ", e);
-            alert('Ошибка при удалении записи. Проверьте права доступа.');
-        }
-    }
-}
-
-async function editTraining(trainingId) {
-    if (!auth.currentUser) return alert('Действие доступно только администратору.');
-    
-    try {
-        const doc = await trainingsRef.doc(trainingId).get();
-        if (!doc.exists) {
-            alert('Тренировка не найдена.');
-            return;
-        }
-        
-        const training = doc.data();
-        
-        const newDate = prompt(`Редактирование "${training.name}". Новая дата (текущая: ${training.date}):`, training.date);
-        if (newDate === null) return; 
-        
-        const newTime = prompt(`Новое время (текущее: ${training.time}):`, training.time);
-        if (newTime === null) return;
-        
-        const newName = prompt(`Новое название (текущее: ${training.name}):`, training.name);
-        if (newName === null) return;
-        
-        const newTrainer = prompt(`Новый тренер (текущий: ${training.trainer}):`, training.trainer);
-        if (newTrainer === null) return;
-
-        const newCapacityStr = prompt(`Новая вместимость (текущая: ${training.capacity}):`, training.capacity);
-        if (newCapacityStr === null) return;
-        const newCapacity = parseInt(newCapacityStr, 10);
-
-        await trainingsRef.doc(trainingId).update({
-            date: newDate,
-            time: newTime,
-            name: newName,
-            trainer: newTrainer, 
-            capacity: newCapacity
-        });
-        
-        alert(`Тренировка "${newName}" успешно обновлена!`);
-
-    } catch (e) {
-        console.error("Ошибка при редактировании: ", e);
-        alert('Ошибка при обновлении тренировки. Проверьте консоль.');
-    }
-}
-
-
-// --- 6. ЛОГИКА ОТОБРАЖЕНИЯ (СЛУШАТЕЛЬ FIREBASE) ---
-
-function renderSchedule(schedule) {
-    schedule.sort((a, b) => {
-        const dateTimeA = new Date(`${a.date}T${a.time}`);
-        const dateTimeB = new Date(`${b.date}T${b.time}`);
-        return dateTimeA - dateTimeB;
+        localStorage.setItem('trainings', JSON.stringify(trainings));
+        trainingForm.reset();
+        document.getElementById('training-id').value = ''; // Сброс ID
+        renderSchedule();
     });
 
-    scheduleList.innerHTML = ''; 
+    // Функция для отображения расписания
+    function renderSchedule() {
+        scheduleList.innerHTML = '';
+        trainings.forEach(training => {
+            const isFull = training.attendees.length >= training.maxAttendees;
+            const statusClass = isFull ? 'status-full' : 'status-available';
+            const statusText = isFull ? 'Мест нет' : `Места есть (${training.attendees.length}/${training.maxAttendees})`;
 
-    if (schedule.length === 0) {
-        scheduleList.innerHTML = '<p style="text-align: center;">Расписание пока пусто. Добавьте первую тренировку!</p>';
-        return;
-    }
+            let cardHtml = `
+                <div class="training-card">
+                    <h3>
+                        ${training.name} 
+                        <img src="images/logo.jpg" alt="Логотип тренировки" class="training-logo">
+                    </h3>
+                    <p>Тренер: ${training.trainer}</p>
+                    <p>Дата: ${training.date}</p>
+                    <p>Время: ${training.time}</p>
+                    <div class="booking-status ${statusClass}">${statusText}</div>
+            `;
 
-    schedule.forEach(training => {
-        const trainingId = training.id; 
-        
-        const currentRegistered = training.registered ? training.registered.length : 0;
-        const isFull = currentRegistered >= training.capacity;
-        const availableSlots = training.capacity - currentRegistered;
-        
-        const statusClass = isFull ? 'status-full' : 'status-available';
-        const statusText = isFull ? 'МЕСТ НЕТ' : `Свободно: ${availableSlots}`;
-
-        let registeredListHtml = '';
-        if (currentRegistered > 0) {
-            registeredListHtml = '<h4>Записались:</h4><ul>';
-            training.registered.forEach(person => {
-                const deleteBtnHtml = isAdminMode 
-                    ? `<button class="delete-button delete-registration-btn" data-training-id="${trainingId}" data-full-name="${person.fullName}" data-vk-id="${person.vkUserId || ''}">Удалить</button>`
-                    : '';
-                registeredListHtml += `
-                    <li>
-                        ${person.fullName} (<a href="${person.vkLink}" target="_blank">VK</a>)
-                        ${deleteBtnHtml}
-                    </li>
+            if (isAdminMode) {
+                cardHtml += `
+                    <button class="edit-training-btn" data-id="${training.id}">Редактировать тренировку</button>
+                    <button class="delete-training-btn" data-id="${training.id}">Удалить тренировку</button>
+                    <h4>Записаны (${training.attendees.length}/${training.maxAttendees}):</h4>
+                    <ul>
                 `;
-            });
-            registeredListHtml += '</ul>';
-        }
+                if (training.attendees.length > 0) {
+                    training.attendees.forEach(attendee => {
+                        cardHtml += `
+                            <li>
+                                ${attendee} 
+                                <button class="delete-registration-btn" data-training-id="${training.id}" data-attendee="${attendee}">Удалить</button>
+                            </li>
+                        `;
+                    });
+                } else {
+                    cardHtml += `<li>Пока никто не записан.</li>`;
+                }
+                cardHtml += `</ul>`;
+            } else {
+                cardHtml += `
+                    <button class="book-button" data-id="${training.id}" ${isFull ? 'disabled' : ''}>Записаться</button>
+                `;
+            }
 
-        const deleteTrainingBtnHtml = isAdminMode 
-            ? `<button class="delete-button delete-training-btn" style="width: 100%; margin-top: 10px;" data-id="${trainingId}">Удалить Тренировку</button>`
-            : '';
-            
-        const editTrainingBtnHtml = isAdminMode
-            ? `<button class="submit-button edit-training-btn" style="width: 100%; margin-top: 10px; margin-left: 0; background-color: #ffc107; color: black;" data-id="${trainingId}">Редактировать</button>`
-            : '';
-            
-
-        const cardHtml = `
-            <div class="training-card">
-                <h3>${training.name}</h3>
-                <div class="details">
-                    <p><strong>👤 Тренер:</strong> ${training.trainer}</p> 
-                    <p><strong>📅 Дата:</strong> ${new Date(training.date).toLocaleDateString('ru-RU', { weekday: 'short', day: 'numeric', month: 'long' })}</p>
-                    <p><strong>⏰ Время:</strong> ${training.time}</p>
-                    <p><strong>👥 Записано:</strong> ${currentRegistered} из ${training.capacity}</p>
-                    ${registeredListHtml} 
-                </div>
-                <div class="booking-status ${statusClass}">${statusText}</div>
-                <button 
-                    class="book-button" 
-                    data-id="${trainingId}"
-                    ${isFull || isAdminMode ? 'disabled' : ''}
-                >
-                    ${isAdminMode ? 'В режиме админа нельзя записаться' : (isFull ? 'Места закончились' : 'Записаться')}
-                </button>
-                ${deleteTrainingBtnHtml}
-                ${editTrainingBtnHtml}
-            </div>
-        `;
-
-        scheduleList.innerHTML += cardHtml;
-    });
-
-    document.querySelectorAll('.book-button:not([disabled])').forEach(button => {
-        button.addEventListener('click', function() {
-            const trainingId = this.getAttribute('data-id'); 
-            handleBooking(trainingId);
+            cardHtml += `</div>`;
+            scheduleList.innerHTML += cardHtml;
         });
-    });
 
-    if (isAdminMode) {
-        document.querySelectorAll('.delete-training-btn').forEach(button => {
-            button.addEventListener('click', function() {
-                const trainingId = this.getAttribute('data-id'); 
-                deleteTraining(trainingId);
-            });
+        // !!! ВАЖНО: Вызов addEventListenersToButtons() после каждого рендеринга !!!
+        addEventListenersToButtons();
+    }
+
+    // Добавление слушателей событий к динамически созданным кнопкам
+    function addEventListenersToButtons() {
+        document.querySelectorAll('.book-button').forEach(button => {
+            // Удаляем существующие слушатели, чтобы избежать дублирования
+            button.removeEventListener('click', handleBookButtonClick); 
+            button.addEventListener('click', handleBookButtonClick); 
         });
-        
+
         document.querySelectorAll('.edit-training-btn').forEach(button => {
-            button.addEventListener('click', function() {
-                const trainingId = this.getAttribute('data-id'); 
-                editTraining(trainingId);
-            });
+            button.removeEventListener('click', handleEditButtonClick);
+            button.addEventListener('click', handleEditButtonClick);
+        });
+
+        document.querySelectorAll('.delete-training-btn').forEach(button => {
+            button.removeEventListener('click', handleDeleteTrainingClick);
+            button.addEventListener('click', handleDeleteTrainingClick);
         });
 
         document.querySelectorAll('.delete-registration-btn').forEach(button => {
-            button.addEventListener('click', function() {
-                const trainingId = this.getAttribute('data-training-id');
-                const fullName = this.getAttribute('data-full-name');
-                const vkUserIdToDelete = this.getAttribute('data-vk-id');
-                
-                deleteRegistration(trainingId, fullName, vkUserIdToDelete);
-            });
+            button.removeEventListener('click', handleDeleteRegistrationClick);
+            button.addEventListener('click', handleDeleteRegistrationClick);
         });
     }
-}
 
-
-// --- 7. ЗАПУСК ПРИЛОЖЕНИЯ: СЛУШАТЕЛЬ FIREBASE И НАСТРОЙКА VK ---
-
-function initializeApp() {
-    if (adminContainer) {
-        adminContainer.classList.add('hidden'); 
-    }
-    
-    auth.onAuthStateChanged(user => {
-        if (user) {
-            isAdminMode = true;
-            adminContainer.classList.remove('hidden');
-            adminButton.textContent = 'Выйти из режима Администратора';
+    // Отдельные функции-обработчики для кнопок
+    function handleBookButtonClick(e) {
+        const trainingId = e.target.dataset.id;
+        // Изменение: добавлено 'vk_first_name' и 'vk_last_name' как опция
+        const defaultName = localStorage.getItem('vk_first_name') && localStorage.getItem('vk_last_name') 
+            ? `${localStorage.getItem('vk_first_name')} ${localStorage.getItem('vk_last_name')}`
+            : ''; // Если нет данных ВК, то пустая строка
+            
+        const attendeeName = prompt('Введите ваше имя для записи:', defaultName);
+        
+        console.log("Введено имя:", attendeeName); // Отладочный вывод
+        
+        if (attendeeName !== null && attendeeName.trim() !== '') { // Проверяем, что пользователь не отменил и имя не пустое
+            bookTraining(trainingId, attendeeName.trim());
+        } else if (attendeeName !== null) { // Если пользователь нажал ОК, но ввел пустое имя
+            alert('Имя не может быть пустым. Пожалуйста, введите ваше имя.');
         } else {
-            isAdminMode = false;
-            adminContainer.classList.add('hidden'); 
-            adminButton.textContent = 'Войти в режим Администратора';
+            console.log("Запись отменена пользователем."); // Отладочный вывод
         }
-    });
-
-    if (window.vkBridge) {
-        vkBridge.send('VKWebAppSetViewSettings', {
-            'status_bar_style': 'light',
-            'action_bar_color': 'none',
-            'navigation_bar_color': 'none',
-        }).catch(e => console.log('Не удалось установить настройки VK.', e));
     }
 
-    trainingsRef.onSnapshot((querySnapshot) => {
-        const schedule = [];
-        querySnapshot.forEach((doc) => {
-            schedule.push({ id: doc.id, ...doc.data() });
-        });
-        renderSchedule(schedule); 
-    }, (error) => {
-        console.error("Ошибка при получении данных из Firestore: ", error);
-        scheduleList.innerHTML = '<p style="text-align: center; color: red;">Ошибка загрузки расписания. Проверьте консоль.</p>';
-    });
-}
+    function handleEditButtonClick(e) {
+        const trainingId = e.target.dataset.id;
+        editTraining(trainingId);
+    }
 
-document.addEventListener('DOMContentLoaded', initializeApp);
+    function handleDeleteTrainingClick(e) {
+        const trainingId = e.target.dataset.id;
+        if (confirm('Вы уверены, что хотите удалить эту тренировку?')) {
+            deleteTraining(trainingId);
+        }
+    }
+
+    function handleDeleteRegistrationClick(e) {
+        const trainingId = e.target.dataset.trainingId;
+        const attendeeName = e.target.dataset.attendee;
+        if (confirm(`Удалить запись ${attendeeName}?`)) {
+            deleteAttendee(trainingId, attendeeName);
+        }
+    }
+
+
+    // Функция для записи на тренировку
+    function bookTraining(trainingId, attendeeName) {
+        console.log(`Попытка записи на ${trainingId} для ${attendeeName}`); // Отладочный вывод
+        const training = trainings.find(t => t.id === trainingId);
+        if (training) {
+            if (training.attendees.length < training.maxAttendees) {
+                if (!training.attendees.includes(attendeeName)) {
+                    training.attendees.push(attendeeName);
+                    try {
+                        localStorage.setItem('trainings', JSON.stringify(trainings));
+                        console.log("Данные успешно сохранены в Local Storage."); // Отладочный вывод
+                        renderSchedule(); // Перерендеринг после успешной записи
+                        alert('Вы успешно записаны на тренировку!');
+                    } catch (e) {
+                        console.error("Критическая ошибка при сохранении в Local Storage:", e);
+                        alert('Произошла критическая ошибка при сохранении данных. Пожалуйста, проверьте консоль.');
+                    }
+                } else {
+                    alert('Вы уже записаны на эту тренировку.');
+                }
+            } else {
+                alert('Мест нет.');
+            }
+        } else {
+            console.error(`Тренировка с ID ${trainingId} не найдена.`); // Отладочный вывод
+            alert('Не удалось найти тренировку для записи.');
+        }
+    }
+
+    // Функция для редактирования тренировки
+    function editTraining(trainingId) {
+        const training = trainings.find(t => t.id === trainingId);
+        if (training) {
+            document.getElementById('training-id').value = training.id;
+            document.getElementById('training-name').value = training.name;
+            document.getElementById('training-trainer').value = training.trainer;
+            document.getElementById('training-date').value = training.date;
+            document.getElementById('training-time').value = training.time;
+            document.getElementById('training-max-attendees').value = training.maxAttendees;
+        }
+    }
+
+    // Функция для удаления тренировки
+    function deleteTraining(trainingId) {
+        trainings = trainings.filter(t => t.id !== trainingId);
+        localStorage.setItem('trainings', JSON.stringify(trainings));
+        renderSchedule();
+    }
+
+    // Функция для удаления посетителя из тренировки
+    function deleteAttendee(trainingId, attendeeName) {
+        const training = trainings.find(t => t.id === trainingId);
+        if (training) {
+            training.attendees = training.attendees.filter(name => name !== attendeeName);
+            localStorage.setItem('trainings', JSON.stringify(trainings));
+            renderSchedule();
+        }
+    }
+
+    renderSchedule();
+});
