@@ -202,12 +202,35 @@ h1, h2 {
 }
 
 .training-card h3 {
+    display: flex; /* Делаем заголовок flex-контейнером */
+    justify-content: space-between; /* Распределяем элементы по краям */
+    align-items: center; /* Выравниваем по центру по вертикали */
     color: var(--accent-color);
     border-bottom: 1px solid var(--shadow-dark);
     padding-bottom: 10px;
     margin-bottom: 15px;
-    text-align: left;
+    text-align: left; /* Убираем center, т.к. flexbox уже выравнивает */
 }
+
+/* !!! НОВЫЕ СТИЛИ ДЛЯ ЛОГОТИПА В КАРТОЧКАХ ТРЕНИРОВОК !!! */
+.training-logo {
+    width: 40px; /* Ширина логотипа */
+    height: auto; /* Автоматическая высота для сохранения пропорций */
+    margin-left: 10px; /* Отступ слева от текста названия */
+    border-radius: 8px; /* Небольшое скругление углов для неоморфического вида */
+    /* Добавляем легкую тень для интеграции в неоморфический дизайн */
+    box-shadow: 
+        2px 2px 5px var(--shadow-dark),
+        -2px -2px 5px var(--shadow-light);
+}
+
+/* Опционально: уменьшение размера логотипа на мобильных */
+@media (max-width: 480px) {
+    .training-logo {
+        width: 30px; /* Меньше на маленьких экранах */
+    }
+}
+
 
 /* Статус бронирования */
 .booking-status {
