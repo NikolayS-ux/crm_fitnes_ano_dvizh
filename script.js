@@ -69,11 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             let cardHtml = `
                 <div class="training-card">
-                    <h3>
-                        ${training.name} 
-                        <img src="images/logo.jpg" alt="Логотип тренировки" class="training-logo">
-                    </h3>
-                    <p>Тренер: ${training.trainer}</p>
+                    <h3>${training.name}</h3> <p>Тренер: ${training.trainer}</p>
                     <p>Дата: ${training.date}</p>
                     <p>Время: ${training.time}</p>
                     <div class="booking-status ${statusClass}">${statusText}</div>
@@ -116,8 +112,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Добавление слушателей событий к динамически созданным кнопкам
     function addEventListenersToButtons() {
         // Очищаем существующие слушатели, чтобы избежать дублирования
+        // Присваиваем null, чтобы гарантированно удалить предыдущий обработчик
         document.querySelectorAll('.book-button').forEach(button => {
-            button.onclick = null; // Удаляем старый onclick
+            button.onclick = null; 
             button.addEventListener('click', handleBookButtonClick);
         });
 
@@ -185,7 +182,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         renderSchedule();
                         alert('Вы успешно записаны на тренировку!');
                     } catch (e) {
-                        // Если есть ошибка, то выведем ее в консоль, но не будем вызывать лишний alert
                         console.error("Ошибка при сохранении в Local Storage:", e);
                         alert('Произошла ошибка при сохранении данных. Проверьте консоль разработчика.');
                     }
