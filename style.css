@@ -33,7 +33,7 @@ body {
     border-radius: 12px;
     background: var(--main-bg-color);
     
-    /* Эффект Неоморфизма (вдавленности) */
+    /* Эффект Неоморфизма (выпуклости/вдавленности) */
     box-shadow: 
         9px 9px 16px var(--shadow-dark),
         -9px -9px 16px var(--shadow-light);
@@ -75,8 +75,8 @@ h1, h2 {
 }
 
 /* --- Базовые Стили для НЕОМОРФИЧЕСКИХ Кнопок (Выпуклых) --- */
-/* Применяется к .submit-button, .book-button, #admin-toggle-btn, .edit-training-btn, .delete-training-btn */
-.submit-button, .book-button, #admin-toggle-btn, .edit-training-btn { /* ! Изменено: .delete-training-btn убрана отсюда ! */
+/* Применяется к .submit-button, .book-button, #admin-toggle-btn, .edit-training-btn */
+.submit-button, .book-button, #admin-toggle-btn, .edit-training-btn { 
     padding: 12px 20px;
     border: none;
     border-radius: 10px;
@@ -93,8 +93,8 @@ h1, h2 {
     color: var(--text-color); /* Дефолтный цвет текста */
 }
 
-/* Эффект нажатия (вдавленности) для неоморфических кнопок */
-.submit-button:hover, .book-button:hover:not(:disabled), #admin-toggle-btn:hover, .edit-training-btn:hover { /* ! Изменено: .delete-training-btn убрана отсюда ! */
+/* Эффект нажатия (вдавленности) для неоморфических кнопок при наведении */
+.submit-button:hover, .book-button:hover:not(:disabled), #admin-toggle-btn:hover, .edit-training-btn:hover { 
     box-shadow: 
         inset 4px 4px 8px var(--shadow-dark),
         inset -4px -4px 8px var(--shadow-light);
@@ -104,7 +104,7 @@ h1, h2 {
 /* --- Стили для КОНКРЕТНЫХ неоморфических кнопок --- */
 
 /* "Создать Тренировку" и "Войти/Выйти из режима Администратора" */
-/* Они уже получили неоморфизм от базовых стилей, здесь можем только задать их основной цвет текста */
+/* Они уже получили неоморфизм от базовых стилей. Здесь можем задать их основной цвет текста. */
 .submit-button, #admin-toggle-btn {
     color: var(--text-color); 
 }
@@ -120,21 +120,21 @@ h1, h2 {
     background: var(--main-bg-color);
     color: var(--shadow-dark);
     cursor: not-allowed;
-    box-shadow: none; /* Отключаем неоморфизм для неактивной */
+    box-shadow: none; /* Отключаем неоморфизм для неактивной кнопки */
 }
 
-/* "Редактировать Тренировку" (белая с синим текстом) */
+/* !!! ИСПРАВЛЕННАЯ "Редактировать Тренировку" (белая с синим текстом, неоморфизм) !!! */
 .edit-training-btn {
     color: #007bff; /* Синий текст */
     border: 1px solid #007bff; /* Синяя обводка */
-    background: var(--main-bg-color); /* Фон неоморфический */
+    background-color: #ffffff; /* !!! БЕЛЫЙ ФОН !!! */
     width: 100%; 
     margin-top: 10px;
     padding: 12px 25px; 
     border-radius: 10px; 
 }
 .edit-training-btn:hover {
-    background-color: #e2f2ff; /* Светло-голубой фон при наведении, неоморфизм остаётся */
+    background-color: #e2f2ff; /* Светло-голубой фон при наведении, неоморфизм сохраняется */
 }
 
 /* --- Стили для КНОПОК "УДАЛИТЬ" (БЕЗ НЕОМОРФИЗМА, ПРОЗРАЧНО-РОЗОВЫЕ) --- */
