@@ -118,59 +118,45 @@ form.addEventListener('submit', async function(event) {
 
 async function handleBooking(trainingId) {
     const trainingRef = trainingsRef.doc(trainingId);
-    
-    // 1. Получение данных пользователя из VK Bridge (ТОЛЬКО ЕСЛИ ВНУТРИ VK)
-    let fullName = null;
-    let vkLink = null;
-    let vkUserId = null; // Будем использовать ID для уникальности записи
 
-    if (window.vkBridge) {
-        try {
-            const user = await vkBridge.send('VKWebAppGetUserInfo');
-            // Собираем данные
-            fullName = `${user.first_name} ${user.last_name}`;
-            vkLink = `https://vk.com/id${user.id}`;
-            vkUserId = user.id;
-
-        } catch (error) {
-            console.error("Ошибка VK Bridge, требуется ручной ввод:", error);
-            // Если VK Bridge не сработал или пользователь вне VK, переходим к ручному вводу
-            fullName = prompt('Пожалуйста, введите Ваше ФИО (Имя и Фамилия):');
-            if (!fullName) return; 
-            vkLink = prompt('Пожалуйста, введите ссылку на Вашу страницу VK:');
-            if (!vkLink) return; 
-        }
-    } else {
-        // Если пользователь не в VK Mini App (открыл через браузер), запрашиваем вручную
-        fullName = prompt('Пожалуйста, введите Ваше ФИО (Имя и Фамилия):');
-        if (!fullName) return; 
-        vkLink = prompt('Пожалуйста, введите ссылку на Вашу страницу VK:');
-        if (!vkLink) return; 
+    // --- Временно УПРОЩЕННЫЙ БЛОК ДЛЯ ОТЛАДКИ ---
+    // Имитируем получение данных пользователя напрямую через prompt,
+    // ИГНОРИРУЯ VK Bridge, так как unpkg.com, возможно, недоступен
+    const fullName = prompt('Пожалуйста, введите Ваше ФИО (Имя и Фамилия):');
+    if (!fullName) {
+        alert('Запись отменена: ФИО не введено.');
+        return; // Выходим, если пользователь отменил ввод
     }
+
+    const vkLink = prompt('Пожалуйста, введите ссылку на Вашу страницу VK:');
+    if (!vkLink) {
+        alert('Запись отменена: Ссылка на VK не введена.');
+        return; // Выходим, если пользователь отменил ввод
+    }
+    
+    // Для отладки не используем vkUserId при ручном вводе
+    const vkUserId = null; 
+    // --- КОНЕЦ ВРЕМЕННО УПРОЩЕННОГО БЛОКА ---
+
 
     // Если данные получены, запускаем транзакцию
     return db.runTransaction(async (transaction) => {
         const doc = await transaction.get(trainingRef);
-        
+
         if (!doc.exists) {
             throw "Документ не существует!";
         }
 
         const training = doc.data();
         const currentRegistered = training.registered ? training.registered.length : 0;
-        
+
         if (currentRegistered >= training.capacity) {
             alert('Извините, все места уже заняты.');
             return;
         }
-        
-        // 2. Проверка, записан ли уже этот пользователь (по ID, если он есть)
-        if (vkUserId && training.registered && training.registered.some(r => r.vkUserId === vkUserId)) {
-             alert('Вы уже записаны на эту тренировку!');
-             return;
-        } 
-        // Если ID нет (ручной ввод), проверяем по ФИО
-        if (!vkUserId && training.registered && training.registered.some(r => r.fullName.toLowerCase() === fullName.trim().toLowerCase())) {
+
+        // Проверка, записан ли уже этот пользователь (по ФИО, так как vkUserId = null при ручном вводе)
+        if (training.registered && training.registered.some(r => r.fullName.toLowerCase() === fullName.trim().toLowerCase())) {
             alert('Вы уже записаны на эту тренировку!');
             return;
         }
@@ -178,11 +164,11 @@ async function handleBooking(trainingId) {
         const newRegistration = {
             fullName: fullName.trim(),
             vkLink: vkLink.trim(),
-            vkUserId: vkUserId // Сохраняем ID для надежной проверки дубликатов
+            vkUserId: vkUserId // Останется null
         };
 
         const newRegistered = training.registered ? [...training.registered, newRegistration] : [newRegistration];
-        
+
         transaction.update(trainingRef, { registered: newRegistered });
         alert(`Вы, ${fullName}, успешно записались на "${training.name}"!`);
     }).catch((error) => {
