@@ -109,30 +109,30 @@ document.addEventListener('DOMContentLoaded', () => {
             scheduleList.innerHTML += cardHtml;
         });
 
-        // !!! ВАЖНО: Вызов addEventListenersToButtons() после каждого рендеринга !!!
+        // Добавляем слушатели событий после рендеринга
         addEventListenersToButtons();
     }
 
     // Добавление слушателей событий к динамически созданным кнопкам
     function addEventListenersToButtons() {
+        // Очищаем существующие слушатели, чтобы избежать дублирования
         document.querySelectorAll('.book-button').forEach(button => {
-            // Удаляем существующие слушатели, чтобы избежать дублирования
-            button.removeEventListener('click', handleBookButtonClick); 
-            button.addEventListener('click', handleBookButtonClick); 
+            button.onclick = null; // Удаляем старый onclick
+            button.addEventListener('click', handleBookButtonClick);
         });
 
         document.querySelectorAll('.edit-training-btn').forEach(button => {
-            button.removeEventListener('click', handleEditButtonClick);
+            button.onclick = null;
             button.addEventListener('click', handleEditButtonClick);
         });
 
         document.querySelectorAll('.delete-training-btn').forEach(button => {
-            button.removeEventListener('click', handleDeleteTrainingClick);
+            button.onclick = null;
             button.addEventListener('click', handleDeleteTrainingClick);
         });
 
         document.querySelectorAll('.delete-registration-btn').forEach(button => {
-            button.removeEventListener('click', handleDeleteRegistrationClick);
+            button.onclick = null;
             button.addEventListener('click', handleDeleteRegistrationClick);
         });
     }
@@ -140,21 +140,16 @@ document.addEventListener('DOMContentLoaded', () => {
     // Отдельные функции-обработчики для кнопок
     function handleBookButtonClick(e) {
         const trainingId = e.target.dataset.id;
-        // Изменение: добавлено 'vk_first_name' и 'vk_last_name' как опция
         const defaultName = localStorage.getItem('vk_first_name') && localStorage.getItem('vk_last_name') 
             ? `${localStorage.getItem('vk_first_name')} ${localStorage.getItem('vk_last_name')}`
-            : ''; // Если нет данных ВК, то пустая строка
+            : ''; 
             
         const attendeeName = prompt('Введите ваше имя для записи:', defaultName);
         
-        console.log("Введено имя:", attendeeName); // Отладочный вывод
-        
-        if (attendeeName !== null && attendeeName.trim() !== '') { // Проверяем, что пользователь не отменил и имя не пустое
+        if (attendeeName !== null && attendeeName.trim() !== '') {
             bookTraining(trainingId, attendeeName.trim());
-        } else if (attendeeName !== null) { // Если пользователь нажал ОК, но ввел пустое имя
+        } else if (attendeeName !== null) {
             alert('Имя не может быть пустым. Пожалуйста, введите ваше имя.');
-        } else {
-            console.log("Запись отменена пользователем."); // Отладочный вывод
         }
     }
 
@@ -178,10 +173,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-
     // Функция для записи на тренировку
     function bookTraining(trainingId, attendeeName) {
-        console.log(`Попытка записи на ${trainingId} для ${attendeeName}`); // Отладочный вывод
         const training = trainings.find(t => t.id === trainingId);
         if (training) {
             if (training.attendees.length < training.maxAttendees) {
@@ -189,12 +182,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     training.attendees.push(attendeeName);
                     try {
                         localStorage.setItem('trainings', JSON.stringify(trainings));
-                        console.log("Данные успешно сохранены в Local Storage."); // Отладочный вывод
-                        renderSchedule(); // Перерендеринг после успешной записи
+                        renderSchedule();
                         alert('Вы успешно записаны на тренировку!');
                     } catch (e) {
-                        console.error("Критическая ошибка при сохранении в Local Storage:", e);
-                        alert('Произошла критическая ошибка при сохранении данных. Пожалуйста, проверьте консоль.');
+                        // Если есть ошибка, то выведем ее в консоль, но не будем вызывать лишний alert
+                        console.error("Ошибка при сохранении в Local Storage:", e);
+                        alert('Произошла ошибка при сохранении данных. Проверьте консоль разработчика.');
                     }
                 } else {
                     alert('Вы уже записаны на эту тренировку.');
@@ -203,7 +196,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert('Мест нет.');
             }
         } else {
-            console.error(`Тренировка с ID ${trainingId} не найдена.`); // Отладочный вывод
             alert('Не удалось найти тренировку для записи.');
         }
     }
