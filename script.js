@@ -119,24 +119,17 @@ form.addEventListener('submit', async function(event) {
 async function handleBooking(trainingId) {
     const trainingRef = trainingsRef.doc(trainingId);
 
-    // --- Временно УПРОЩЕННЫЙ БЛОК ДЛЯ ОТЛАДКИ ---
-    // Имитируем получение данных пользователя напрямую через prompt,
-    // ИГНОРИРУЯ VK Bridge, так как unpkg.com, возможно, недоступен
+    // --- Измененный БЛОК ДЛЯ ОТЛАДКИ (без запроса VK-ссылки) ---
     const fullName = prompt('Пожалуйста, введите Ваше ФИО (Имя и Фамилия):');
     if (!fullName) {
         alert('Запись отменена: ФИО не введено.');
-        return; // Выходим, если пользователь отменил ввод
+        return; 
     }
 
-    const vkLink = prompt('Пожалуйста, введите ссылку на Вашу страницу VK:');
-    if (!vkLink) {
-        alert('Запись отменена: Ссылка на VK не введена.');
-        return; // Выходим, если пользователь отменил ввод
-    }
-    
-    // Для отладки не используем vkUserId при ручном вводе
-    const vkUserId = null; 
-    // --- КОНЕЦ ВРЕМЕННО УПРОЩЕННОГО БЛОКА ---
+    // VK-ссылку теперь не запрашиваем. Устанавливаем её в заглушку.
+    const vkLink = 'https://vk.com/id0'; // Заглушка, если VK-ссылка не нужна
+    const vkUserId = null; // VK User ID также не получаем при ручном вводе
+    // --- КОНЕЦ ИЗМЕНЕННОГО БЛОКА ---
 
 
     // Если данные получены, запускаем транзакцию
@@ -163,7 +156,7 @@ async function handleBooking(trainingId) {
 
         const newRegistration = {
             fullName: fullName.trim(),
-            vkLink: vkLink.trim(),
+            vkLink: vkLink, // Используем заглушку
             vkUserId: vkUserId // Останется null
         };
 
@@ -210,7 +203,8 @@ async function deleteRegistration(trainingId, fullName, vkUserIdToDelete) {
                 if (vkUserIdToDelete) {
                     return p.vkUserId !== vkUserIdToDelete;
                 }
-                return p.fullName !== fullName;
+                // Если нет vkUserId, сравниваем по fullName
+                return p.fullName !== fullName; 
             }) : [];
 
             await trainingRef.update({ registered: newRegistered });
@@ -300,9 +294,11 @@ function renderSchedule(schedule) {
                 const deleteBtnHtml = isAdminMode 
                     ? `<button class="delete-button delete-registration-btn" data-training-id="${trainingId}" data-full-name="${person.fullName}" data-vk-id="${person.vkUserId || ''}">Удалить</button>`
                     : '';
+                // Теперь используем `vkLink` как заглушку, но все равно выводим, если она есть
                 registeredListHtml += `
                     <li>
-                        ${person.fullName} (<a href="${person.vkLink}" target="_blank">VK</a>)
+                        ${person.fullName} 
+                        ${person.vkLink && person.vkLink !== 'https://vk.com/id0' ? `(<a href="${person.vkLink}" target="_blank">VK</a>)` : ''}
                         ${deleteBtnHtml}
                     </li>
                 `;
