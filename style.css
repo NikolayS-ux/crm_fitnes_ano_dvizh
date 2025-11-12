@@ -42,6 +42,11 @@ hr {
     background: #e0e5ec;
     /* Внутренний эффект для карточек */
     box-shadow: inset 5px 5px 10px #c1c6d3, inset -5px -5px 10px #ffffff;
+    
+    /* !!! ИСПРАВЛЕНИЕ ЦЕНТРОВКИ: Flexbox для выравнивания содержимого по центру !!! */
+    display: flex; 
+    flex-direction: column;
+    align-items: center; 
 }
 
 .schedule-list {
@@ -52,6 +57,10 @@ hr {
 
 
 /* --- ФОРМА И ПОЛЯ ВВОДА --- */
+.training-form {
+    width: 100%;
+}
+
 .form-group {
     margin-bottom: 15px;
 }
@@ -86,6 +95,7 @@ input[type="text"], input[type="date"], input[type="time"], input[type="number"]
     transition: all 0.2s ease;
     text-align: center;
     margin-top: 15px;
+    width: 100%; /* Гарантируем полную ширину для центровки */
     
     /* Общий стиль для нажатия */
     box-shadow: 6px 6px 12px #a3b1c6, -6px -6px 12px #ffffff;
@@ -109,7 +119,6 @@ input[type="text"], input[type="date"], input[type="time"], input[type="number"]
 .book-button {
     background-color: #38c172; /* Зеленый */
     color: white;
-    width: 100%;
 }
 
 .book-button:hover {
@@ -125,6 +134,11 @@ input[type="text"], input[type="date"], input[type="time"], input[type="number"]
 
 
 /* --- ИНФОРМАЦИОННЫЕ БЛОКИ --- */
+.details, .booking-status {
+    width: 100%; /* Убедимся, что информация тоже занимает всю ширину */
+    text-align: left;
+}
+
 .details p {
     margin: 5px 0;
 }
@@ -161,6 +175,7 @@ input[type="text"], input[type="date"], input[type="time"], input[type="number"]
     list-style: none;
     padding: 0;
     margin-top: 10px;
+    width: 100%; /* Списки должны занимать всю ширину */
 }
 
 .training-card ul li {
@@ -188,13 +203,14 @@ input[type="text"], input[type="date"], input[type="time"], input[type="number"]
 
 /* --- 1. КНОПКА РЕДАКТИРОВАТЬ (Белая с синим текстом) --- */
 .edit-training-btn {
-    /* Важно: используем !important, чтобы переопределить стандартные стили .submit-button */
     background-color: #ffffff !important; 
     color: #007bff !important; 
     border: 1px solid #007bff !important; 
     box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1) !important; 
-    width: 100%;
+    width: 100%; /* ГАРАНТИЯ ЦЕНТРОВКИ */
     margin-top: 10px;
+    padding: 12px 25px; 
+    border-radius: 10px; 
 }
 
 .edit-training-btn:hover {
@@ -208,9 +224,11 @@ input[type="text"], input[type="date"], input[type="time"], input[type="number"]
     color: #dc3545 !important; 
     border: 1px solid #dc3545 !important; 
     box-shadow: none !important; 
-    width: 100%;
+    width: 100%; /* ГАРАНТИЯ ЦЕНТРОВКИ */
     margin-top: 10px;
-    font-size: 0.9em; /* Чуть меньший шрифт для визуального отличия */
+    font-size: 0.9em; 
+    padding: 12px 25px; 
+    border-radius: 10px; 
 }
 
 .delete-training-btn:hover {
