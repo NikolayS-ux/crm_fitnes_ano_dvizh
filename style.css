@@ -18,7 +18,7 @@ body {
     background-color: var(--main-bg-color);
     color: var(--text-color);
     line-height: 1.6;
-    /* ! ОБЩАЯ ЦЕНТРОВКА СТРАНИЦЫ: Сохраняем ! */
+    /* ! ИСПРАВЛЕННОЕ ЦЕНТРИРОВАНИЕ ! */
     display: flex;
     flex-direction: column;
     align-items: center; 
@@ -116,6 +116,22 @@ h1, h2 {
     margin-top: 15px;
     color: var(--accent-color);
 }
+.delete-button {
+    background-color: #dc3545; 
+    color: white;
+    font-size: 0.8em;
+    padding: 6px 10px;
+}
+.delete-button:hover {
+    background-color: #c82333; 
+}
+
+.book-button:disabled {
+    background: var(--main-bg-color);
+    color: var(--shadow-dark);
+    cursor: not-allowed;
+    box-shadow: none; 
+}
 
 
 /* --- Стили для Расписания (Карточки) --- */
@@ -135,10 +151,6 @@ h1, h2 {
     box-shadow: 
         6px 6px 12px var(--shadow-dark),
         -6px -6px 12px var(--shadow-light);
-    
-    /* !!! ИСПРАВЛЕННАЯ ЦЕНТРОВКА: Flexbox для вертикального расположения, но без горизонтальной центровки !!! */
-    display: flex; 
-    flex-direction: column;
 }
 
 .training-card h3 {
@@ -156,8 +168,6 @@ h1, h2 {
     border-radius: 8px;
     font-weight: bold;
     text-align: center;
-    width: 100%; /* Гарантируем полную ширину */
-    box-sizing: border-box;
     
     /* Вдавленный эффект для статуса */
     background: var(--main-bg-color);
@@ -184,102 +194,20 @@ hr {
     opacity: 0.5;
 }
 
+/* --- Стили для Баннера --- */
+.banner-section {
+    max-width: 900px; 
+    width: 90%; 
+    margin: 20px auto; 
+    border-radius: 12px;
+    overflow: hidden; 
+    box-shadow: 
+        9px 9px 16px var(--shadow-dark),
+        -9px -9px 16px var(--shadow-light);
+}
 
-/* --- Стили АДМИНКИ --- */
-.training-card ul {
-    list-style: none;
-    padding: 0;
-    margin-top: 10px;
+.banner-image {
     width: 100%; 
-}
-
-.training-card ul li {
-    background: #ffffff;
-    padding: 8px;
-    border-radius: 6px;
-    margin-bottom: 5px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.9em;
-    box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.05);
-}
-
-
-/* ======================================================= */
-/* !!! НОВЫЕ СТИЛИ ДЛЯ КНОПОК АДМИНА (ПЕРЕОПРЕДЕЛЕНИЕ) !!!*/
-/* ======================================================= */
-
-/* --- 1. КНОПКА РЕДАКТИРОВАТЬ (Белая с синим текстом) --- */
-.edit-training-btn {
-    /* Наследует все от .submit-button, но меняет цвет */
-    background-color: #ffffff !important; 
-    color: #007bff !important; 
-    border: 1px solid #007bff !important; 
-    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1) !important; 
-    width: 100%; 
-    margin-top: 10px;
-    padding: 12px 25px; 
-    border-radius: 10px; 
-    transition: background-color 0.2s; 
-}
-
-.edit-training-btn:hover {
-    background-color: #e2f2ff !important; 
-    color: #007bff !important;
-    box-shadow: 4px 4px 8px var(--shadow-dark), -4px -4px 8px var(--shadow-light);
-}
-
-/* --- 2. КНОПКА УДАЛИТЬ ТРЕНИРОВКУ (Полупрозрачный красный) --- */
-.delete-training-btn {
-    background-color: rgba(255, 0, 0, 0.1) !important; 
-    color: #dc3545 !important; 
-    border: 1px solid #dc3545 !important; 
-    box-shadow: none !important; 
-    width: 100%; 
-    margin-top: 10px;
-    font-size: 0.9em; 
-    padding: 12px 25px; 
-    border-radius: 10px; 
-    transition: all 0.2s ease;
-}
-
-.delete-training-btn:hover {
-    background-color: rgba(255, 0, 0, 0.2) !important; 
-    color: #dc3545 !important;
-    box-shadow: 4px 4px 8px var(--shadow-dark), -4px -4px 8px var(--shadow-light);
-}
-
-
-/* --- 3. КНОПКА УДАЛИТЬ ЗАПИСЬ (Маленькая, полупрозрачная) --- */
-.delete-registration-btn { 
-    background-color: rgba(255, 0, 0, 0.05) !important; 
-    color: #dc3545 !important;
-    border: 1px solid rgba(220, 53, 69, 0.5) !important;
-    padding: 2px 8px;
-    margin-left: 10px;
-    font-size: 0.8em;
-    border-radius: 5px;
-    cursor: pointer;
-    box-shadow: none;
-    transition: background-color 0.2s;
-}
-
-.delete-registration-btn:hover {
-    background-color: rgba(255, 0, 0, 0.15) !important;
-}
-
-/* ВОССТАНОВЛЕНИЕ КНОПКИ: Мы переопределяем старый стиль, чтобы он не конфликтовал, но не скрываем его полностью! */
-/* Мы не удаляем его из HTML (script.js), поэтому он должен быть виден */
-.delete-button {
-    background-color: #dc3545; 
-    color: white;
-    font-size: 0.8em;
-    padding: 6px 10px;
-    /* Убедимся, что маленькая кнопка удаления записи видна */
-    display: inline-block; 
-}
-
-.delete-button:hover {
-    background-color: #c82333; 
+    height: auto; 
+    display: block; 
 }
