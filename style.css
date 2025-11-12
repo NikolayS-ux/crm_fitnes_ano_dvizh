@@ -74,9 +74,9 @@ h1, h2 {
     color: var(--text-color);
 }
 
-/* --- Базовые Стили для НЕОМОРФИЧЕСКИХ Кнопок --- */
+/* --- Базовые Стили для НЕОМОРФИЧЕСКИХ Кнопок (Выпуклых) --- */
 /* Применяется к .submit-button, .book-button, #admin-toggle-btn, .edit-training-btn, .delete-training-btn */
-.submit-button, .book-button, #admin-toggle-btn, .edit-training-btn, .delete-training-btn {
+.submit-button, .book-button, #admin-toggle-btn, .edit-training-btn { /* ! Изменено: .delete-training-btn убрана отсюда ! */
     padding: 12px 20px;
     border: none;
     border-radius: 10px;
@@ -94,4 +94,207 @@ h1, h2 {
 }
 
 /* Эффект нажатия (вдавленности) для неоморфических кнопок */
-.submit-
+.submit-button:hover, .book-button:hover:not(:disabled), #admin-toggle-btn:hover, .edit-training-btn:hover { /* ! Изменено: .delete-training-btn убрана отсюда ! */
+    box-shadow: 
+        inset 4px 4px 8px var(--shadow-dark),
+        inset -4px -4px 8px var(--shadow-light);
+    color: var(--accent-color); /* Акцентный цвет текста при наведении */
+}
+
+/* --- Стили для КОНКРЕТНЫХ неоморфических кнопок --- */
+
+/* "Создать Тренировку" и "Войти/Выйти из режима Администратора" */
+/* Они уже получили неоморфизм от базовых стилей, здесь можем только задать их основной цвет текста */
+.submit-button, #admin-toggle-btn {
+    color: var(--text-color); 
+}
+
+/* Отдельные стили для кнопки "Записаться" */
+.book-button {
+    width: 100%;
+    margin-top: 15px;
+    color: var(--accent-color); /* Записаться - текст акцентный */
+}
+
+.book-button:disabled {
+    background: var(--main-bg-color);
+    color: var(--shadow-dark);
+    cursor: not-allowed;
+    box-shadow: none; /* Отключаем неоморфизм для неактивной */
+}
+
+/* "Редактировать Тренировку" (белая с синим текстом) */
+.edit-training-btn {
+    color: #007bff; /* Синий текст */
+    border: 1px solid #007bff; /* Синяя обводка */
+    background: var(--main-bg-color); /* Фон неоморфический */
+    width: 100%; 
+    margin-top: 10px;
+    padding: 12px 25px; 
+    border-radius: 10px; 
+}
+.edit-training-btn:hover {
+    background-color: #e2f2ff; /* Светло-голубой фон при наведении, неоморфизм остаётся */
+}
+
+/* --- Стили для КНОПОК "УДАЛИТЬ" (БЕЗ НЕОМОРФИЗМА, ПРОЗРАЧНО-РОЗОВЫЕ) --- */
+
+/* "Удалить Тренировку" */
+.delete-training-btn {
+    background-color: rgba(255, 0, 0, 0.1); /* Полупрозрачный красный фон */
+    color: #dc3545; /* Красный текст */
+    border: 1px solid #dc3545; /* Красная обводка */
+    box-shadow: none; /* Без теней неоморфизма */
+    width: 100%; 
+    margin-top: 10px;
+    font-size: 0.9em; 
+    padding: 12px 25px; 
+    border-radius: 10px; 
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.delete-training-btn:hover {
+    background-color: rgba(255, 0, 0, 0.2); /* Чуть темнее при наведении */
+    color: #c82333; /* Текст темнее */
+    box-shadow: none; /* Без теней */
+}
+
+/* "Удалить Запись" (маленькая) */
+.delete-registration-btn { 
+    background-color: rgba(255, 0, 0, 0.05); /* Очень легкий красный фон */
+    color: #dc3545; /* Красный текст */
+    border: 1px solid rgba(220, 53, 69, 0.5); /* Полупрозрачная красная обводка */
+    padding: 2px 8px;
+    margin-left: 10px;
+    font-size: 0.8em;
+    border-radius: 5px;
+    cursor: pointer;
+    box-shadow: none; /* Без теней */
+    transition: background-color 0.2s;
+    display: inline-block; 
+}
+.delete-registration-btn:hover {
+    background-color: rgba(255, 0, 0, 0.15); /* Чуть темнее при наведении */
+}
+
+
+/* --- Стили для Расписания (Карточки) --- */
+.schedule-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px; 
+    padding: 10px 0;
+}
+
+.training-card {
+    padding: 20px;
+    border-radius: 12px;
+    background: var(--main-bg-color);
+    
+    /* Эффект Неоморфизма (выпуклости) */
+    box-shadow: 
+        6px 6px 12px var(--shadow-dark),
+        -6px -6px 12px var(--shadow-light);
+    
+    /* ЦЕНТРОВКА: Flexbox для вертикального расположения элементов */
+    display: flex; 
+    flex-direction: column;
+}
+
+.training-card h3 {
+    color: var(--accent-color);
+    border-bottom: 1px solid var(--shadow-dark);
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+/* Статус бронирования */
+.booking-status {
+    margin-top: 15px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    font-weight: bold;
+    text-align: center;
+    width: 100%; /* Гарантируем полную ширину */
+    box-sizing: border-box;
+    
+    /* Вдавленный эффект для статуса */
+    background: var(--main-bg-color);
+    box-shadow: 
+        inset 3px 3px 6px var(--shadow-dark),
+        inset -3px -3px 6px var(--shadow-light);
+}
+
+.status-available {
+    color: #28a745; 
+}
+
+.status-full {
+    color: #dc3545; 
+}
+
+/* Линия-разделитель */
+hr {
+    max-width: 900px;
+    margin: 40px auto;
+    border: 0;
+    height: 1px;
+    background-color: var(--shadow-dark);
+    opacity: 0.5;
+}
+
+
+/* --- Стили АДМИНКИ (дополнительные) --- */
+.training-card ul {
+    list-style: none;
+    padding: 0;
+    margin-top: 10px;
+    width: 100%; 
+}
+
+.training-card ul li {
+    background: #ffffff; /* !!! БЕЛЫЙ ФОН для списка записей !!! */
+    padding: 8px;
+    border-radius: 6px;
+    margin-bottom: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9em;
+    box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.05); /* Легкая тень */
+}
+
+
+/* --- Стили для Баннера (с адаптивностью и УМЕНЬШЕННЫЙ) --- */
+.banner-section {
+    max-width: 900px; 
+    width: 90%; 
+    margin: 20px auto; 
+    border-radius: 12px;
+    overflow: hidden; 
+    box-shadow: 
+        9px 9px 16px var(--shadow-dark),
+        -9px -9px 16px var(--shadow-light);
+    
+    max-height: 250px; /* ! ОГРАНИЧЕНИЕ ВЫСОТЫ БАННЕРА по умолчанию ! */
+    min-height: 100px; /* Минимальная высота, чтобы не был слишком тонким */
+}
+
+.banner-image {
+    width: 100%; 
+    height: 100%; /* Занимает всю высоту контейнера */
+    display: block; 
+    object-fit: cover; /* Обрезает изображение, чтобы оно вписывалось, сохраняя пропорции */
+    object-position: center center; /* Центрируем изображение, если оно обрезается */
+}
+
+/* Медиазапрос для очень маленьких экранов (смартфоны) */
+@media (max-width: 480px) { 
+    .banner-section {
+        max-height: 150px; /* Ещё больше уменьшаем высоту для компактности */
+    }
+    .banner-image {
+        max-height: 150px; /* Соответственно */
+    }
+}
