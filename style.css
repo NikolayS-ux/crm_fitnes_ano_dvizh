@@ -117,6 +117,7 @@ h1, h2 {
     color: var(--accent-color);
 }
 
+
 /* --- Стили для Расписания (Карточки) --- */
 .schedule-list {
     display: grid;
@@ -135,10 +136,9 @@ h1, h2 {
         6px 6px 12px var(--shadow-dark),
         -6px -6px 12px var(--shadow-light);
     
-    /* !!! ИСПРАВЛЕНИЕ ДЛЯ КАРТОЧЕК: Делаем их Flex-контейнером для выравнивания кнопок, но без центровки текста !!! */
+    /* !!! ИСПРАВЛЕННАЯ ЦЕНТРОВКА: Flexbox для вертикального расположения, но без горизонтальной центровки !!! */
     display: flex; 
     flex-direction: column;
-    /* align-items: center; <--- Мы не используем эту строку, чтобы текст остался слева! */
 }
 
 .training-card h3 {
@@ -185,6 +185,27 @@ hr {
 }
 
 
+/* --- Стили АДМИНКИ --- */
+.training-card ul {
+    list-style: none;
+    padding: 0;
+    margin-top: 10px;
+    width: 100%; 
+}
+
+.training-card ul li {
+    background: #ffffff;
+    padding: 8px;
+    border-radius: 6px;
+    margin-bottom: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9em;
+    box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+
 /* ======================================================= */
 /* !!! НОВЫЕ СТИЛИ ДЛЯ КНОПОК АДМИНА (ПЕРЕОПРЕДЕЛЕНИЕ) !!!*/
 /* ======================================================= */
@@ -196,18 +217,17 @@ hr {
     color: #007bff !important; 
     border: 1px solid #007bff !important; 
     box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1) !important; 
-    width: 100%; /* ГАРАНТИЯ ПОЛНОЙ ШИРИНЫ */
+    width: 100%; 
     margin-top: 10px;
     padding: 12px 25px; 
     border-radius: 10px; 
-    /* Убираем конфликт с общим :hover */
     transition: background-color 0.2s; 
 }
 
 .edit-training-btn:hover {
     background-color: #e2f2ff !important; 
     color: #007bff !important;
-    box-shadow: 4px 4px 8px var(--shadow-dark), -4px -4px 8px var(--shadow-light); /* Возвращаем выпуклый эффект */
+    box-shadow: 4px 4px 8px var(--shadow-dark), -4px -4px 8px var(--shadow-light);
 }
 
 /* --- 2. КНОПКА УДАЛИТЬ ТРЕНИРОВКУ (Полупрозрачный красный) --- */
@@ -216,7 +236,7 @@ hr {
     color: #dc3545 !important; 
     border: 1px solid #dc3545 !important; 
     box-shadow: none !important; 
-    width: 100%; /* ГАРАНТИЯ ПОЛНОЙ ШИРИНЫ */
+    width: 100%; 
     margin-top: 10px;
     font-size: 0.9em; 
     padding: 12px 25px; 
@@ -227,12 +247,11 @@ hr {
 .delete-training-btn:hover {
     background-color: rgba(255, 0, 0, 0.2) !important; 
     color: #dc3545 !important;
-    box-shadow: 4px 4px 8px var(--shadow-dark), -4px -4px 8px var(--shadow-light); /* Возвращаем выпуклый эффект */
+    box-shadow: 4px 4px 8px var(--shadow-dark), -4px -4px 8px var(--shadow-light);
 }
 
 
 /* --- 3. КНОПКА УДАЛИТЬ ЗАПИСЬ (Маленькая, полупрозрачная) --- */
-/* Переопределяем старый .delete-button, который был для удаления тренировки */
 .delete-registration-btn { 
     background-color: rgba(255, 0, 0, 0.05) !important; 
     color: #dc3545 !important;
@@ -250,7 +269,17 @@ hr {
     background-color: rgba(255, 0, 0, 0.15) !important;
 }
 
-/* Скрываем старый стиль .delete-button, так как мы используем .delete-training-btn и .delete-registration-btn */
+/* ВОССТАНОВЛЕНИЕ КНОПКИ: Мы переопределяем старый стиль, чтобы он не конфликтовал, но не скрываем его полностью! */
+/* Мы не удаляем его из HTML (script.js), поэтому он должен быть виден */
 .delete-button {
-    display: none; 
+    background-color: #dc3545; 
+    color: white;
+    font-size: 0.8em;
+    padding: 6px 10px;
+    /* Убедимся, что маленькая кнопка удаления записи видна */
+    display: inline-block; 
+}
+
+.delete-button:hover {
+    background-color: #c82333; 
 }
