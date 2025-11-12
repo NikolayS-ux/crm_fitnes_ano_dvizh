@@ -127,7 +127,7 @@ h1, h2 {
 .edit-training-btn {
     color: #007bff; /* Синий текст */
     border: 1px solid #007bff; /* Синяя обводка */
-    background-color: #ffffff; /* !!! БЕЛЫЙ ФОН !!! */
+    background-color: #ffffff !important; /* !!! БЕЛЫЙ ФОН С !IMPORTANT !!! */
     width: 100%; 
     margin-top: 10px;
     padding: 12px 25px; 
