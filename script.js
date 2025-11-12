@@ -1,4 +1,5 @@
-// ! Инициализация VK Bridge !
+// ! НОВЫЕ СТРОКИ: Инициализация VK Bridge !
+// Этот код запускает обмен данными между вашим приложением и VK.
 if (window.vkBridge) {
     vkBridge.send('VKWebAppInit');
 }
@@ -11,20 +12,22 @@ const firebaseConfig = {
     apiKey: "AIzaSyDtQuQwe6qWuHZI8WfCmHMdoo0MA1hR0hM",
     authDomain: "crm-ano-dvizh11.firebaseapp.com",
     projectId: "crm-ano-dvizh11",
-    storageBucket: "crm-ano-dvizh11.firebasestorage.app",
+    storageBucket: "crm-ano-dvizh11.firebaseapp.com",
     messagingSenderId: "452385590391",
     appId: "1:452385590391:web:5372af6d4529576ce90a72",
     measurementId: "G-GDWKJH308X"
 };
-// !!! 🚨 НЕ ЗАБУДЬТЕ ЗАМЕНИТЬ КЛЮЧИ ВЫШЕ НА СВОИ! 🚨 !!!
-
 
 // Инициализируем Firebase
 const app = firebase.initializeApp(firebaseConfig);
+// Получаем ссылку на базу данных Firestore
 const db = app.firestore();
+// Получаем ссылку на сервис Аутентификации
 const auth = app.auth(); 
+// Ссылка на нашу коллекцию с расписанием
 const trainingsRef = db.collection('trainings');
 
+// Теперь старые константы
 const form = document.getElementById('add-training-form');
 const scheduleList = document.getElementById('schedule-list');
 const adminContainer = document.getElementById('admin-panel-container');
@@ -37,7 +40,7 @@ let isAdminMode = false;
 adminButton.addEventListener('click', function() {
     
     if (!isAdminMode) {
-        // --- Вход в режим админа ---
+        // --- Вход в режим админа (Используем Firebase Auth) ---
         const email = prompt('Введите email Администратора:');
         const password = prompt('Введите пароль Администратора:');
         
@@ -45,12 +48,14 @@ adminButton.addEventListener('click', function() {
 
         auth.signInWithEmailAndPassword(email, password)
             .then((userCredential) => {
+                // Вход успешен
                 isAdminMode = true;
                 adminContainer.classList.remove('hidden'); 
                 adminButton.textContent = 'Выйти из режима Администратора';
                 alert(`Вход выполнен. Добро пожаловать, ${userCredential.user.email}!`);
             })
             .catch((error) => {
+                // Вход неуспешен
                 console.error("Ошибка входа:", error);
                 alert('Ошибка входа. Проверьте логин/пароль.');
             });
@@ -70,11 +75,12 @@ adminButton.addEventListener('click', function() {
 });
 
 
-// --- 3. ЛОГИКА ДОБАВЛЕНИЯ НОВОЙ ТРЕНИРОВКИ ---
+// --- 3. ЛОГИКА ДОБАВЛЕНИЯ НОВОЙ ТРЕНИРОВКИ (С FIREBASE) ---
 
 form.addEventListener('submit', async function(event) { 
     event.preventDefault(); 
     
+    // Проверка, что пользователь вошел
     if (!auth.currentUser) {
         alert('Действие доступно только авторизованному администратору.');
         return;
@@ -92,7 +98,7 @@ form.addEventListener('submit', async function(event) {
         name,
         trainer, 
         capacity,
-        registered: [], 
+        registered: [], // Массив для записей
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
         createdBy: auth.currentUser.uid 
     };
@@ -108,16 +114,16 @@ form.addEventListener('submit', async function(event) {
 });
 
 
-// --- 4. ЛОГИКА ЗАПИСИ НА ТРЕНИРОВКУ (УПРОЩЕННАЯ) ---
+// --- 4. ЛОГИКА ЗАПИСИ НА ТРЕНИРОВКУ (С FIREBASE) ---
 
 async function handleBooking(trainingId) {
     const trainingRef = trainingsRef.doc(trainingId);
     
+    // 1. Получение данных пользователя из VK Bridge (ТОЛЬКО ЕСЛИ ВНУТРИ VK)
     let fullName = null;
-    let vkLink = "Не указана"; // Значение по умолчанию
-    let vkUserId = null; 
+    let vkLink = null;
+    let vkUserId = null; // Будем использовать ID для уникальности записи
 
-    // 1. Попытка получить данные пользователя из VK Bridge (ТОЛЬКО ЕСЛИ ВНУТРИ VK)
     if (window.vkBridge) {
         try {
             const user = await vkBridge.send('VKWebAppGetUserInfo');
@@ -127,18 +133,20 @@ async function handleBooking(trainingId) {
             vkUserId = user.id;
 
         } catch (error) {
-            console.warn("Ошибка VK Bridge, требуется ручной ввод ФИО:", error);
-            // Ничего не делаем, переходим к ручному вводу ФИО
+            console.error("Ошибка VK Bridge, требуется ручной ввод:", error);
+            // Если VK Bridge не сработал или пользователь вне VK, переходим к ручному вводу
+            fullName = prompt('Пожалуйста, введите Ваше ФИО (Имя и Фамилия):');
+            if (!fullName) return; 
+            vkLink = prompt('Пожалуйста, введите ссылку на Вашу страницу VK:');
+            if (!vkLink) return; 
         }
-    }
-
-    // 2. Если ФИО не получено автоматически, запрашиваем вручную (ТОЛЬКО ФИО)
-    if (!fullName) {
+    } else {
+        // Если пользователь не в VK Mini App (открыл через браузер), запрашиваем вручную
         fullName = prompt('Пожалуйста, введите Ваше ФИО (Имя и Фамилия):');
-        if (!fullName) return; // Выходим, если пользователь отменил ввод
+        if (!fullName) return; 
+        vkLink = prompt('Пожалуйста, введите ссылку на Вашу страницу VK:');
+        if (!vkLink) return; 
     }
-    
-    // Запрос ссылки на VK полностью убран!
 
     // Если данные получены, запускаем транзакцию
     return db.runTransaction(async (transaction) => {
@@ -156,11 +164,12 @@ async function handleBooking(trainingId) {
             return;
         }
         
-        // 3. Проверка на дубликат (по ID или по ФИО)
+        // 2. Проверка, записан ли уже этот пользователь (по ID, если он есть)
         if (vkUserId && training.registered && training.registered.some(r => r.vkUserId === vkUserId)) {
              alert('Вы уже записаны на эту тренировку!');
              return;
         } 
+        // Если ID нет (ручной ввод), проверяем по ФИО
         if (!vkUserId && training.registered && training.registered.some(r => r.fullName.toLowerCase() === fullName.trim().toLowerCase())) {
             alert('Вы уже записаны на эту тренировку!');
             return;
@@ -168,8 +177,8 @@ async function handleBooking(trainingId) {
 
         const newRegistration = {
             fullName: fullName.trim(),
-            vkLink: vkLink, // Сохраняем "Не указана" или реальную ссылку
-            vkUserId: vkUserId // Сохраняем ID или null
+            vkLink: vkLink.trim(),
+            vkUserId: vkUserId // Сохраняем ID для надежной проверки дубликатов
         };
 
         const newRegistered = training.registered ? [...training.registered, newRegistration] : [newRegistration];
@@ -183,7 +192,7 @@ async function handleBooking(trainingId) {
 }
 
 
-// --- 5. ЛОГИКА УДАЛЕНИЯ И РЕДАКТИРОВАНИЯ ТРЕНИРОВКИ/ЗАПИСИ ---
+// --- 5. ЛОГИКА УДАЛЕНИЯ И РЕДАКТИРОВАНИЯ ТРЕНИРОВКИ/ЗАПИСИ (С FIREBASE) ---
 
 async function deleteTraining(trainingId) {
     if (!auth.currentUser) return alert('Действие доступно только администратору.');
@@ -211,13 +220,10 @@ async function deleteRegistration(trainingId, fullName, vkUserIdToDelete) {
             
             const training = doc.data();
             
-            // Фильтруем массив:
             const newRegistered = training.registered ? training.registered.filter(p => {
-                // Если есть VK ID, удаляем по ID 
                 if (vkUserIdToDelete) {
                     return p.vkUserId !== vkUserIdToDelete;
                 }
-                // Иначе удаляем по ФИО
                 return p.fullName !== fullName;
             }) : [];
 
@@ -242,7 +248,6 @@ async function editTraining(trainingId) {
         
         const training = doc.data();
         
-        // 1. Запрашиваем новые данные через prompt
         const newDate = prompt(`Редактирование "${training.name}". Новая дата (текущая: ${training.date}):`, training.date);
         if (newDate === null) return; 
         
@@ -259,7 +264,6 @@ async function editTraining(trainingId) {
         if (newCapacityStr === null) return;
         const newCapacity = parseInt(newCapacityStr, 10);
 
-        // 2. Обновляем документ в Firebase
         await trainingsRef.doc(trainingId).update({
             date: newDate,
             time: newTime,
@@ -280,7 +284,6 @@ async function editTraining(trainingId) {
 // --- 6. ЛОГИКА ОТОБРАЖЕНИЯ (СЛУШАТЕЛЬ FIREBASE) ---
 
 function renderSchedule(schedule) {
-    // Сортируем расписание по дате и времени
     schedule.sort((a, b) => {
         const dateTimeA = new Date(`${a.date}T${a.time}`);
         const dateTimeB = new Date(`${b.date}T${b.time}`);
@@ -305,22 +308,15 @@ function renderSchedule(schedule) {
         const statusText = isFull ? 'МЕСТ НЕТ' : `Свободно: ${availableSlots}`;
 
         let registeredListHtml = '';
-        if (currentRegistered > 0 && isAdminMode) { // Показываем список только админу
-            registeredListHtml = '<h4>Записались (Админка):</h4><ul>';
+        if (currentRegistered > 0) {
+            registeredListHtml = '<h4>Записались:</h4><ul>';
             training.registered.forEach(person => {
-                // В data-vk-id передаем ID, если он есть, для надежного удаления
                 const deleteBtnHtml = isAdminMode 
                     ? `<button class="delete-button delete-registration-btn" data-training-id="${trainingId}" data-full-name="${person.fullName}" data-vk-id="${person.vkUserId || ''}">Удалить</button>`
                     : '';
-                
-                // Отображаем VK ссылку, только если она была получена (не "Не указана")
-                const vkLinkDisplay = (person.vkLink && person.vkLink !== "Не указана") 
-                    ? `(<a href="${person.vkLink}" target="_blank">VK</a>)` 
-                    : '';
-
                 registeredListHtml += `
                     <li>
-                        ${person.fullName} ${vkLinkDisplay}
+                        ${person.fullName} (<a href="${person.vkLink}" target="_blank">VK</a>)
                         ${deleteBtnHtml}
                     </li>
                 `;
@@ -342,9 +338,9 @@ function renderSchedule(schedule) {
                 <h3>${training.name}</h3>
                 <div class="details">
                     <p><strong>👤 Тренер:</strong> ${training.trainer}</p> 
-                    <p><strong>📅 Дата:</strong> ${new Date(`${training.date}T${training.time}`).toLocaleDateString('ru-RU', { weekday: 'short', day: 'numeric', month: 'long' })}</p>
+                    <p><strong>📅 Дата:</strong> ${new Date(training.date).toLocaleDateString('ru-RU', { weekday: 'short', day: 'numeric', month: 'long' })}</p>
                     <p><strong>⏰ Время:</strong> ${training.time}</p>
-                    <p><strong>👥 Места:</strong> ${currentRegistered} из ${training.capacity}</p>
+                    <p><strong>👥 Записано:</strong> ${currentRegistered} из ${training.capacity}</p>
                     ${registeredListHtml} 
                 </div>
                 <div class="booking-status ${statusClass}">${statusText}</div>
@@ -363,7 +359,6 @@ function renderSchedule(schedule) {
         scheduleList.innerHTML += cardHtml;
     });
 
-    // Добавляем обработчики кнопок Записаться 
     document.querySelectorAll('.book-button:not([disabled])').forEach(button => {
         button.addEventListener('click', function() {
             const trainingId = this.getAttribute('data-id'); 
@@ -371,7 +366,6 @@ function renderSchedule(schedule) {
         });
     });
 
-    // Добавляем обработчики для кнопок Админа
     if (isAdminMode) {
         document.querySelectorAll('.delete-training-btn').forEach(button => {
             button.addEventListener('click', function() {
@@ -407,7 +401,6 @@ function initializeApp() {
         adminContainer.classList.add('hidden'); 
     }
     
-    // 1. Слушатель, который проверяет состояние входа
     auth.onAuthStateChanged(user => {
         if (user) {
             isAdminMode = true;
@@ -420,7 +413,6 @@ function initializeApp() {
         }
     });
 
-    // 2. Устанавливаем цвет фона приложения под тему VK
     if (window.vkBridge) {
         vkBridge.send('VKWebAppSetViewSettings', {
             'status_bar_style': 'light',
@@ -429,7 +421,6 @@ function initializeApp() {
         }).catch(e => console.log('Не удалось установить настройки VK.', e));
     }
 
-    // 3. Устанавливаем слушатель Firebase для расписания 
     trainingsRef.onSnapshot((querySnapshot) => {
         const schedule = [];
         querySnapshot.forEach((doc) => {
