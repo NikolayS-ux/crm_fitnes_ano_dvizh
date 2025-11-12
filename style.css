@@ -201,17 +201,13 @@ h1, h2 {
     flex-direction: column;
 }
 
-/* !!! ИЗМЕНЕНО: Возвращение h3 в исходное состояние (без flexbox для лого) !!! */
 .training-card h3 {
     color: var(--accent-color);
     border-bottom: 1px solid var(--shadow-dark);
     padding-bottom: 10px;
     margin-bottom: 15px;
-    text-align: left; 
+    text-align: left;
 }
-
-/* !!! УДАЛЕНЫ СТИЛИ ДЛЯ .training-logo !!! */
-
 
 /* Статус бронирования */
 .booking-status {
