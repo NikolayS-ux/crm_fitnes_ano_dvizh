@@ -34,6 +34,12 @@ const adminContainer = document.getElementById('admin-panel-container');
 const adminButton = document.getElementById('admin-toggle-btn');
 let isAdminMode = false;
 
+// --- НОВЫЕ КОНСТАНТЫ для модального окна ---
+const bookingModal = document.getElementById('booking-modal');
+const bookingFullNameInput = document.getElementById('booking-fullName');
+const modalConfirmBtn = document.getElementById('modal-confirm-btn');
+const modalCancelBtn = document.getElementById('modal-cancel-btn');
+
 
 // --- 2. Логика АДМИНИСТРИРОВАНИЯ (ВХОД ЧЕРЕЗ FIREBASE AUTH) ---
 
@@ -116,23 +122,69 @@ form.addEventListener('submit', async function(event) {
 
 // --- 4. ЛОГИКА ЗАПИСИ НА ТРЕНИРОВКУ (С FIREBASE) ---
 
+// Функция для показа модального окна записи
+function showBookingModal(trainingId) {
+    return new Promise((resolve) => {
+        bookingModal.classList.add('active'); // Показываем модальное окно
+        bookingFullNameInput.value = ''; // Очищаем поле ввода
+        bookingFullNameInput.focus(); // Устанавливаем фокус
+
+        const confirmHandler = () => {
+            const fullName = bookingFullNameInput.value.trim();
+            hideBookingModal();
+            resolve(fullName); // Передаем введенное ФИО
+            cleanupListeners();
+        };
+
+        const cancelHandler = () => {
+            hideBookingModal();
+            resolve(null); // Если отменили, возвращаем null
+            cleanupListeners();
+        };
+
+        // Добавляем слушатели событий для кнопок модального окна
+        modalConfirmBtn.addEventListener('click', confirmHandler);
+        modalCancelBtn.addEventListener('click', cancelHandler);
+
+        // Позволяем закрыть модалку по Esc
+        const escapeHandler = (e) => {
+            if (e.key === 'Escape') {
+                cancelHandler();
+            }
+        };
+        document.addEventListener('keydown', escapeHandler);
+
+        // Очистка слушателей, чтобы избежать множественных срабатываний
+        const cleanupListeners = () => {
+            modalConfirmBtn.removeEventListener('click', confirmHandler);
+            modalCancelBtn.removeEventListener('click', cancelHandler);
+            document.removeEventListener('keydown', escapeHandler);
+        };
+    });
+}
+
+// Функция для скрытия модального окна
+function hideBookingModal() {
+    bookingModal.classList.remove('active');
+}
+
+
+// Основная функция handleBooking теперь использует модальное окно
 async function handleBooking(trainingId) {
     const trainingRef = trainingsRef.doc(trainingId);
 
-    // --- Измененный БЛОК ДЛЯ ОТЛАДКИ (без запроса VK-ссылки) ---
-    const fullName = prompt('Пожалуйста, введите Ваше ФИО (Имя и Фамилия):');
+    // --- Используем модальное окно вместо prompt() ---
+    const fullName = await showBookingModal(trainingId);
     if (!fullName) {
         alert('Запись отменена: ФИО не введено.');
         return; 
     }
+    // --- Конец блока модального окна ---
 
-    // VK-ссылку теперь не запрашиваем. Устанавливаем её в заглушку.
-    const vkLink = 'https://vk.com/id0'; // Заглушка, если VK-ссылка не нужна
-    const vkUserId = null; // VK User ID также не получаем при ручном вводе
-    // --- КОНЕЦ ИЗМЕНЕННОГО БЛОКА ---
+    // VK-ссылку по-прежнему не запрашиваем. Устанавливаем её в заглушку.
+    const vkLink = 'https://vk.com/id0'; 
+    const vkUserId = null; 
 
-
-    // Если данные получены, запускаем транзакцию
     return db.runTransaction(async (transaction) => {
         const doc = await transaction.get(trainingRef);
 
@@ -148,16 +200,15 @@ async function handleBooking(trainingId) {
             return;
         }
 
-        // Проверка, записан ли уже этот пользователь (по ФИО, так как vkUserId = null при ручном вводе)
-        if (training.registered && training.registered.some(r => r.fullName.toLowerCase() === fullName.trim().toLowerCase())) {
+        if (training.registered && training.registered.some(r => r.fullName.toLowerCase() === fullName.toLowerCase())) {
             alert('Вы уже записаны на эту тренировку!');
             return;
         }
 
         const newRegistration = {
-            fullName: fullName.trim(),
-            vkLink: vkLink, // Используем заглушку
-            vkUserId: vkUserId // Останется null
+            fullName: fullName,
+            vkLink: vkLink,
+            vkUserId: vkUserId 
         };
 
         const newRegistered = training.registered ? [...training.registered, newRegistration] : [newRegistration];
@@ -200,10 +251,9 @@ async function deleteRegistration(trainingId, fullName, vkUserIdToDelete) {
             const training = doc.data();
             
             const newRegistered = training.registered ? training.registered.filter(p => {
-                if (vkUserIdToDelete) {
+                if (vkUserIdToDelete && vkUserIdToDelete !== 'null') { // Проверяем на 'null' как строку
                     return p.vkUserId !== vkUserIdToDelete;
                 }
-                // Если нет vkUserId, сравниваем по fullName
                 return p.fullName !== fullName; 
             }) : [];
 
@@ -211,7 +261,7 @@ async function deleteRegistration(trainingId, fullName, vkUserIdToDelete) {
             alert(`Запись ${fullName} удалена.`);
         } catch (e) {
             console.error("Ошибка при удалении записи: ", e);
-            alert('Ошибка при удалении записи. Проверьте права доступа.');
+            alert('Ошибка при удалении записи. Пробуйте снова.');
         }
     }
 }
@@ -291,10 +341,13 @@ function renderSchedule(schedule) {
         if (currentRegistered > 0) {
             registeredListHtml = '<h4>Записались:</h4><ul>';
             training.registered.forEach(person => {
+                // Если vkUserId был сохранен как null, то он при чтении может быть 'null' строкой или null
+                const vkIdAttr = (person.vkUserId === null || person.vkUserId === 'null') ? '' : person.vkUserId;
+                
                 const deleteBtnHtml = isAdminMode 
-                    ? `<button class="delete-button delete-registration-btn" data-training-id="${trainingId}" data-full-name="${person.fullName}" data-vk-id="${person.vkUserId || ''}">Удалить</button>`
+                    ? `<button class="delete-button delete-registration-btn" data-training-id="${trainingId}" data-full-name="${person.fullName}" data-vk-id="${vkIdAttr}">Удалить</button>`
                     : '';
-                // Теперь используем `vkLink` как заглушку, но все равно выводим, если она есть
+                
                 registeredListHtml += `
                     <li>
                         ${person.fullName} 
