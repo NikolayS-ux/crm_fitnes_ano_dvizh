@@ -3,66 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>💪 Расписание Тренировок</title>
-    
-    <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
-
+    <title>Расписание Записи на Тренировку</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/vk-bridge.min.js"></script>
 </head>
 <body>
+    <div class="container">
+        <header>
+            <h1>Расписание Записи на Тренировку</h1>
+            <p>Система онлайн-записи для спортивной организации</p>
+            <div class="header-actions">
+                <button id="admin-toggle-btn" class="admin-button">Войти в режим Администратора</button>
+            </div>
+        </header>
 
-    <header class="header">
-        <h1>Расписание Записи на Тренировки</h1>
-        <p>Простое и стильное управление бронированием.</p>
-        <button id="admin-toggle-btn" class="submit-button" style="margin-top: 15px;">Войти в режим Администратора</button> 
-    </header>
+        <section class="hero-section">
+            <img src="images/hero-banner.jpg" alt="АНО Движение - Жизнь" class="hero-image">
+            <h2 class="hero-title">АНО Движение - Жизнь</h2>
+        </section>
 
-    <section class="banner-section">
-        <img src="banner.jpg.png" alt="Баннер АНО Движение - Жизнь" class="banner-image">
-    </section>
-
-    <div id="admin-panel-container">
-        <section class="admin-section">
-            <h2>➕ Добавить новую тренировку</h2>
-            <form id="add-training-form" class="training-form">
-                <div class="form-group">
-                    <label for="date">Дата:</label>
-                    <input type="date" id="date" required>
-                </div>
-                <div class="form-group">
-                    <label for="time">Время:</label>
-                    <input type="time" id="time" required>
-                </div>
-                <div class="form-group">
-                    <label for="name">Название:</label>
-                    <input type="text" id="name" placeholder="Йога, КроссФит, Пилатес..." required>
-                </div>
-                <div class="form-group">
-                    <label for="trainer">Тренер:</label>
-                    <input type="text" id="trainer" placeholder="Иван Иванов" required>
-                </div>
-                <div class="form-group">
-                    <label for="capacity">Макс. мест:</label>
-                    <input type="number" id="capacity" min="1" value="10" required>
-                </div>
-                <button type="submit" class="submit-button">Создать Тренировку</button>
+        <section id="admin-panel-container" class="admin-panel hidden">
+            <h2>Добавить новую тренировку</h2>
+            <form id="add-training-form">
+                <input type="date" id="date" required>
+                <input type="time" id="time" required>
+                <input type="text" id="name" placeholder="Название тренировки" required>
+                <input type="text" id="trainer" placeholder="Имя тренера" required>
+                <input type="number" id="capacity" placeholder="Вместимость" min="1" required>
+                <button type="submit" class="submit-button">Добавить тренировку</button>
             </form>
+        </section>
+
+        <section class="schedule">
+            <h2>👉 Текущее расписание</h2>
+            <div id="schedule-list" class="schedule-grid">
+                </div>
         </section>
     </div>
 
-    <hr>
-
-    <section class="schedule-section">
-        <h2>🗓️ Текущее расписание</h2>
-        <div id="schedule-list" class="schedule-list">
-            <p>Загрузка расписания...</p>
+    <div id="booking-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h2>Запись на тренировку</h2>
+            <p>Пожалуйста, введите Ваше имя и фамилию:</p>
+            <input type="text" id="booking-fullName" placeholder="Имя Фамилия" required>
+            <div class="modal-buttons">
+                <button id="modal-confirm-btn" class="submit-button">Записаться</button>
+                <button id="modal-cancel-btn" class="cancel-button">Отмена</button>
+            </div>
         </div>
-    </section>
+    </div>
 
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-    
     <script src="script.js"></script>
 </body>
 </html>
