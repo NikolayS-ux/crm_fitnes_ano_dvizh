@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>💪 Расписание Тренировок</title>
+    <title>💪 Фитнес на районе | Усогорск</title>
     
     <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
 
@@ -11,17 +11,18 @@
 </head>
 <body>
 
-    <header class="header">
-        <h1>Расписание Записи на Тренировки</h1>
-        <p>Простое и стильное управление бронированием.</p>
+    <header class="header glass-panel">
+        <h1>Фитнес на районе</h1>
+        <p>Проект реализуется при поддержке Гранта Главы Республики Коми. Управление бронированием.</p>
         <button id="admin-toggle-btn" class="submit-button" style="margin-top: 15px;">Войти в режим Администратора</button> 
     </header>
 
-    <section class="banner-section">
+    <section class="banner-section glass-panel">
         <img src="banner.jpg.png" alt="Баннер АНО Движение - Жизнь" class="banner-image">
     </section>
 
-    <div id="admin-panel-container" class="hidden"> <section class="admin-section">
+    <div id="admin-panel-container" class="hidden"> 
+        <section class="admin-section glass-panel">
             <h2>➕ Добавить новую тренировку</h2>
             <form id="add-training-form" class="training-form">
                 <div class="form-group">
@@ -34,7 +35,7 @@
                 </div>
                 <div class="form-group">
                     <label for="name">Название:</label>
-                    <input type="text" id="name" placeholder="Йога, КроссФит, Пилатес..." required>
+                    <input type="text" id="name" placeholder="ОФП, Растяжка, Здоровая спина..." required>
                 </div>
                 <div class="form-group">
                     <label for="trainer">Тренер:</label>
@@ -49,7 +50,9 @@
         </section>
     </div>
 
-    <hr class="neomorphic-hr"> <section class="schedule-section">
+    <hr class="glass-hr"> 
+    
+    <section class="schedule-section glass-panel">
         <h2>🗓️ Текущее расписание</h2>
         <div id="schedule-list" class="schedule-list">
             <p>Загрузка расписания...</p>
