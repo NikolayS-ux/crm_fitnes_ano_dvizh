@@ -311,7 +311,7 @@ function renderSchedule(schedule) {
             : '';
             
         const editTrainingBtnHtml = isAdminMode
-            ? `<button class="submit-button edit-training-btn" style="width: 100%; margin-top: 10px; margin-left: 0; background-color: #ffc107; color: black;" data-id="${trainingId}">Редактировать</button>`
+            ? `<button class="submit-button edit-training-btn" style="width: 100%; margin-top: 10px; margin-left: 0; background-color: rgba(255, 193, 7, 0.8); color: black;" data-id="${trainingId}">Редактировать</button>`
             : '';
             
 
