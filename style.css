@@ -1,21 +1,23 @@
-/* --- Стили Неоморфизма (Soft UI) --- */
+/* --- Стили Glassmorphism (Стекло) --- */
 :root {
-    /* Основной, мягкий фон */
-    --main-bg-color: #e0e5ec;
-    /* Основной цвет для теней (темный и светлый) */
-    --shadow-light: #ffffff;
-    --shadow-dark: #a3b1c6;
-    /* Акцентный цвет (фиолетовый) */
-    --accent-color: #6d5bba; 
-    --text-color: #555;
+    /* Цветовая палитра для текста и акцентов */
+    --accent-color: #2c3e50; 
+    --text-color: #333333;
     --font-family: 'Arial', sans-serif;
+    
+    /* Переменные для эффекта стекла */
+    --glass-bg: rgba(255, 255, 255, 0.25);
+    --glass-border: rgba(255, 255, 255, 0.4);
+    --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
 }
 
 body {
     font-family: var(--font-family);
     margin: 0;
     padding: 0;
-    background-color: var(--main-bg-color);
+    /* Мягкий градиентный фон, необходимый для того, чтобы стекло "работало" */
+    background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
+    background-attachment: fixed;
     color: var(--text-color);
     line-height: 1.6;
     /* ОБЩАЯ ЦЕНТРОВКА СТРАНИЦЫ */
@@ -24,19 +26,21 @@ body {
     align-items: center; 
 }
 
-/* --- Основные контейнеры (Header, Section) --- */
+/* --- Основные стеклянные контейнеры --- */
+.glass-panel, .header, .admin-section, .schedule-section, .training-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+    border-radius: 15px;
+}
+
 .header, .admin-section, .schedule-section {
     max-width: 900px;
     width: 90%; 
     margin: 20px auto;
     padding: 30px;
-    border-radius: 12px;
-    background: var(--main-bg-color);
-    
-    /* Эффект Неоморфизма (выпуклости/вдавленности) */
-    box-shadow: 
-        9px 9px 16px var(--shadow-dark),
-        -9px -9px 16px var(--shadow-light);
 }
 
 h1, h2 {
@@ -62,121 +66,106 @@ h1, h2 {
 .form-group input {
     width: 100%;
     padding: 12px 15px;
-    border: none;
+    border: 1px solid var(--glass-border);
     border-radius: 8px;
     box-sizing: border-box; 
-    
-    /* Эффект Неоморфизма (вдавленности) */
-    background: var(--main-bg-color);
-    box-shadow: 
-        inset 5px 5px 10px var(--shadow-dark),
-        inset -5px -5px 10px var(--shadow-light);
+    background: rgba(255, 255, 255, 0.5);
     color: var(--text-color);
+    outline: none;
+    transition: background 0.3s ease, border-color 0.3s ease;
 }
 
-/* --- Базовые Стили для НЕОМОРФИЧЕСКИХ Кнопок (Выпуклых) --- */
-/* Применяется к .submit-button, .book-button, #admin-toggle-btn, .edit-training-btn */
+.form-group input:focus {
+    background: rgba(255, 255, 255, 0.8);
+    border-color: #8ec5fc;
+}
+
+/* --- Базовые Стили для Кнопок (Стеклянные) --- */
 .submit-button, .book-button, #admin-toggle-btn, .edit-training-btn { 
     padding: 12px 20px;
-    border: none;
+    border: 1px solid var(--glass-border);
     border-radius: 10px;
     cursor: pointer;
     font-size: 16px;
     font-weight: bold;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
     
-    /* Выпуклый неоморфизм по умолчанию */
-    background: var(--main-bg-color);
-    box-shadow: 
-        6px 6px 12px var(--shadow-dark),
-        -6px -6px 12px var(--shadow-light);
-    color: var(--text-color); /* Дефолтный цвет текста */
+    background: rgba(255, 255, 255, 0.4);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    color: var(--accent-color);
+    
+    /* Z-index fix: гарантирует, что кнопка нажимается поверх стекла */
+    position: relative;
+    z-index: 10;
 }
 
-/* Эффект нажатия (вдавленности) для неоморфических кнопок при наведении */
 .submit-button:hover, .book-button:hover:not(:disabled), #admin-toggle-btn:hover, .edit-training-btn:hover { 
-    box-shadow: 
-        inset 4px 4px 8px var(--shadow-dark),
-        inset -4px -4px 8px var(--shadow-light);
-    color: var(--accent-color); /* Акцентный цвет текста при наведении */
-}
-
-/* --- Стили для КОНКРЕТНЫХ неоморфических кнопок --- */
-
-/* "Создать Тренировку" и "Войти/Выйти из режима Администратора" */
-/* Они уже получили неоморфизм от базовых стилей. Здесь можем задать их основной цвет текста. */
-.submit-button, #admin-toggle-btn {
-    color: var(--text-color); 
+    background: rgba(255, 255, 255, 0.7);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
 }
 
 /* Отдельные стили для кнопки "Записаться" */
 .book-button {
     width: 100%;
     margin-top: 15px;
-    color: var(--accent-color); /* Записаться - текст акцентный */
+    background: rgba(142, 197, 252, 0.6); /* Легкий синий акцент */
 }
 
 .book-button:disabled {
-    background: var(--main-bg-color);
-    color: var(--shadow-dark);
+    background: rgba(255, 255, 255, 0.2);
+    color: #777;
     cursor: not-allowed;
-    box-shadow: none; /* Отключаем неоморфизм для неактивной кнопки */
+    transform: none;
+    box-shadow: none;
 }
 
-/* !!! ИСПРАВЛЕННАЯ "Редактировать Тренировку" (белая с синим текстом, неоморфизм) !!! */
+/* "Редактировать Тренировку" */
 .edit-training-btn {
-    color: #007bff; /* Синий текст */
-    border: 1px solid #007bff; /* Синяя обводка */
-    background-color: #ffffff !important; /* !!! БЕЛЫЙ ФОН С !IMPORTANT !!! */
     width: 100%; 
     margin-top: 10px;
     padding: 12px 25px; 
-    border-radius: 10px; 
-}
-.edit-training-btn:hover {
-    background-color: #e2f2ff; /* Светло-голубой фон при наведении, неоморфизм сохраняется */
 }
 
-/* --- Стили для КНОПОК "УДАЛИТЬ" (БЕЗ НЕОМОРФИЗМА, ПРОЗРАЧНО-РОЗОВЫЕ) --- */
-
-/* "Удалить Тренировку" */
+/* --- Стили для КНОПОК "УДАЛИТЬ" --- */
 .delete-training-btn {
-    background-color: rgba(255, 0, 0, 0.1); /* Полупрозрачный красный фон */
-    color: #dc3545; /* Красный текст */
-    border: 1px solid #dc3545; /* Красная обводка */
-    box-shadow: none; /* Без теней неоморфизма */
+    background-color: rgba(220, 53, 69, 0.15); 
+    color: #dc3545; 
+    border: 1px solid rgba(220, 53, 69, 0.3); 
     width: 100%; 
     margin-top: 10px;
     font-size: 0.9em; 
     padding: 12px 25px; 
     border-radius: 10px; 
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    position: relative;
+    z-index: 10;
 }
 .delete-training-btn:hover {
-    background-color: rgba(255, 0, 0, 0.2); /* Чуть темнее при наведении */
-    color: #c82333; /* Текст темнее */
-    box-shadow: none; /* Без теней */
+    background-color: rgba(220, 53, 69, 0.3); 
+    transform: translateY(-2px);
 }
 
-/* "Удалить Запись" (маленькая) */
 .delete-registration-btn { 
-    background-color: rgba(255, 0, 0, 0.05); /* Очень легкий красный фон */
-    color: #dc3545; /* Красный текст */
-    border: 1px solid rgba(220, 53, 69, 0.5); /* Полупрозрачная красная обводка */
-    padding: 2px 8px;
+    background-color: rgba(220, 53, 69, 0.1); 
+    color: #dc3545; 
+    border: 1px solid rgba(220, 53, 69, 0.2); 
+    padding: 4px 10px;
     margin-left: 10px;
     font-size: 0.8em;
-    border-radius: 5px;
+    border-radius: 6px;
     cursor: pointer;
-    box-shadow: none; /* Без теней */
-    transition: background-color 0.2s;
-    display: inline-block; 
+    transition: all 0.3s ease;
+    position: relative;
+    z-index: 10;
 }
 .delete-registration-btn:hover {
-    background-color: rgba(255, 0, 0, 0.15); /* Чуть темнее при наведении */
+    background-color: rgba(220, 53, 69, 0.25); 
 }
-
 
 /* --- Стили для Расписания (Карточки) --- */
 .schedule-list {
@@ -188,22 +177,13 @@ h1, h2 {
 
 .training-card {
     padding: 20px;
-    border-radius: 12px;
-    background: var(--main-bg-color);
-    
-    /* Эффект Неоморфизма (выпуклости) */
-    box-shadow: 
-        6px 6px 12px var(--shadow-dark),
-        -6px -6px 12px var(--shadow-light);
-    
-    /* ЦЕНТРОВКА: Flexbox для вертикального расположения элементов */
     display: flex; 
     flex-direction: column;
+    position: relative; /* Важно для внутреннего z-index кнопок */
 }
 
 .training-card h3 {
-    color: var(--accent-color);
-    border-bottom: 1px solid var(--shadow-dark);
+    border-bottom: 1px solid var(--glass-border);
     padding-bottom: 10px;
     margin-bottom: 15px;
     text-align: left;
@@ -211,39 +191,29 @@ h1, h2 {
 
 /* Статус бронирования */
 .booking-status {
-    margin-top: 15px;
+    margin-top: auto;
+    margin-bottom: 15px;
     padding: 8px 10px;
     border-radius: 8px;
     font-weight: bold;
     text-align: center;
-    width: 100%; /* Гарантируем полную ширину */
+    width: 100%; 
     box-sizing: border-box;
-    
-    /* Вдавленный эффект для статуса */
-    background: var(--main-bg-color);
-    box-shadow: 
-        inset 3px 3px 6px var(--shadow-dark),
-        inset -3px -3px 6px var(--shadow-light);
+    background: rgba(255, 255, 255, 0.4);
+    border: 1px solid var(--glass-border);
 }
 
-.status-available {
-    color: #28a745; 
-}
-
-.status-full {
-    color: #dc3545; 
-}
+.status-available { color: #1e7e34; }
+.status-full { color: #dc3545; }
 
 /* Линия-разделитель */
-hr {
+hr.glass-hr {
     max-width: 900px;
     margin: 40px auto;
     border: 0;
     height: 1px;
-    background-color: var(--shadow-dark);
-    opacity: 0.5;
+    background: linear-gradient(to right, transparent, rgba(255,255,255,0.6), transparent);
 }
-
 
 /* --- Стили АДМИНКИ (дополнительные) --- */
 .training-card ul {
@@ -254,47 +224,42 @@ hr {
 }
 
 .training-card ul li {
-    background: #ffffff; /* !!! БЕЛЫЙ ФОН для списка записей !!! */
-    padding: 8px;
-    border-radius: 6px;
-    margin-bottom: 5px;
+    background: rgba(255, 255, 255, 0.35); /* Слегка прозрачный фон, как Вы просили */
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    padding: 8px 12px;
+    border-radius: 8px;
+    margin-bottom: 8px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     font-size: 0.9em;
-    box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.05); /* Легкая тень */
+    border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
-
-/* --- Стили для Баннера (с адаптивностью и УМЕНЬШЕННЫЙ) --- */
+/* --- Стили для Баннера --- */
 .banner-section {
     max-width: 900px; 
     width: 90%; 
     margin: 20px auto; 
     border-radius: 12px;
     overflow: hidden; 
-    box-shadow: 
-        9px 9px 16px var(--shadow-dark),
-        -9px -9px 16px var(--shadow-light);
-    
-    max-height: 250px; /* ! ОГРАНИЧЕНИЕ ВЫСОТЫ БАННЕРА по умолчанию ! */
-    min-height: 100px; /* Минимальная высота, чтобы не был слишком тонким */
+    max-height: 250px; 
+    min-height: 100px; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .banner-image {
     width: 100%; 
-    height: 100%; /* Занимает всю высоту контейнера */
+    height: 100%; 
     display: block; 
-    object-fit: cover; /* Обрезает изображение, чтобы оно вписывалось, сохраняя пропорции */
-    object-position: center center; /* Центрируем изображение, если оно обрезается */
+    object-fit: cover; 
+    object-position: center center; 
 }
 
-/* Медиазапрос для очень маленьких экранов (смартфоны) */
 @media (max-width: 480px) { 
-    .banner-section {
-        max-height: 150px; /* Ещё больше уменьшаем высоту для компактности */
-    }
-    .banner-image {
-        max-height: 150px; /* Соответственно */
-    }
+    .banner-section { max-height: 150px; }
+    .banner-image { max-height: 150px; }
 }
