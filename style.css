@@ -1,33 +1,27 @@
-/* --- ПОЛНЫЙ КОД: Стили Стеклянного Морфизма (Glassmorphism) v6.2.2 --- */
-
+/* --- Стили Неоморфизма (Soft UI) --- */
 :root {
-    /* Основные цвета Lady Stretch */
+    /* Основной, мягкий фон */
     --main-bg-color: #e0e5ec;
+    /* Основной цвет для теней (темный и светлый) */
+    --shadow-light: #ffffff;
+    --shadow-dark: #a3b1c6;
+    /* Акцентный цвет (фиолетовый) */
     --accent-color: #6d5bba; 
-    --text-color: #333333;
+    --text-color: #555;
     --font-family: 'Arial', sans-serif;
-    
-    /* Переменные для Glassmorphism (вместо теней неоморфизма) */
-    --glass-bg: rgba(255, 255, 255, 0.4);
-    --glass-border: rgba(255, 255, 255, 0.5);
-    --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
-    --glass-blur: 15px;
 }
 
 body {
     font-family: var(--font-family);
     margin: 0;
     padding: 0;
-    /* Фон заменен на градиент, чтобы стекло "играло" */
-    background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 50%, #e0c3fc 100%);
-    background-attachment: fixed;
+    background-color: var(--main-bg-color);
     color: var(--text-color);
     line-height: 1.6;
     /* ОБЩАЯ ЦЕНТРОВКА СТРАНИЦЫ */
     display: flex;
     flex-direction: column;
     align-items: center; 
-    min-height: 100vh;
 }
 
 /* --- Основные контейнеры (Header, Section) --- */
@@ -36,18 +30,13 @@ body {
     width: 90%; 
     margin: 20px auto;
     padding: 30px;
-    border-radius: 16px;
+    border-radius: 12px;
+    background: var(--main-bg-color);
     
-    /* Эффект Glassmorphism (вместо выпуклого неоморфизма) */
-    background: var(--glass-bg);
-    backdrop-filter: blur(var(--glass-blur));
-    -webkit-backdrop-filter: blur(var(--glass-blur));
-    border: 1px solid var(--glass-border);
-    box-shadow: var(--glass-shadow);
-    
-    /* Добавлено для корректного наложения слоев */
-    position: relative;
-    z-index: 1;
+    /* Эффект Неоморфизма (выпуклости/вдавленности) */
+    box-shadow: 
+        9px 9px 16px var(--shadow-dark),
+        -9px -9px 16px var(--shadow-light);
 }
 
 h1, h2 {
@@ -77,23 +66,16 @@ h1, h2 {
     border-radius: 8px;
     box-sizing: border-box; 
     
-    /* Стеклянный эффект для инпутов (вместо вдавленного неоморфизма) */
-    background: rgba(255, 255, 255, 0.6);
-    border: 1px solid rgba(255, 255, 255, 0.8);
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+    /* Эффект Неоморфизма (вдавленности) */
+    background: var(--main-bg-color);
+    box-shadow: 
+        inset 5px 5px 10px var(--shadow-dark),
+        inset -5px -5px 10px var(--shadow-light);
     color: var(--text-color);
-    outline: none;
-    transition: all 0.3s ease;
 }
 
-.form-group input:focus {
-    background: rgba(255, 255, 255, 0.9);
-    border-color: var(--accent-color);
-    box-shadow: 0 0 8px rgba(109, 91, 186, 0.3);
-}
-
-/* --- Базовые Стили для Кнопок (Стеклянных и Активных) --- */
-/* Сохраняем все перечисления из вашего оригинала */
+/* --- Базовые Стили для НЕОМОРФИЧЕСКИХ Кнопок (Выпуклых) --- */
+/* Применяется к .submit-button, .book-button, #admin-toggle-btn, .edit-training-btn */
 .submit-button, .book-button, #admin-toggle-btn, .edit-training-btn { 
     padding: 12px 20px;
     border: none;
@@ -101,76 +83,68 @@ h1, h2 {
     cursor: pointer;
     font-size: 16px;
     font-weight: bold;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
     
-    /* КЛЮЧЕВОЕ ИСПРАВЛЕНИЕ: Вывод поверх стекла для клика */
-    position: relative;
-    z-index: 10;
-    
-    /* Стеклянная база кнопки */
-    background: rgba(255, 255, 255, 0.5);
-    backdrop-filter: blur(5px);
-    border: 1px solid rgba(255, 255, 255, 0.6);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-    color: var(--text-color);
+    /* Выпуклый неоморфизм по умолчанию */
+    background: var(--main-bg-color);
+    box-shadow: 
+        6px 6px 12px var(--shadow-dark),
+        -6px -6px 12px var(--shadow-light);
+    color: var(--text-color); /* Дефолтный цвет текста */
 }
 
-/* Эффект при наведении (вместо вдавленности — подсветка) */
+/* Эффект нажатия (вдавленности) для неоморфических кнопок при наведении */
 .submit-button:hover, .book-button:hover:not(:disabled), #admin-toggle-btn:hover, .edit-training-btn:hover { 
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(109, 91, 186, 0.2);
-    background: rgba(255, 255, 255, 0.8);
-    color: var(--accent-color);
+    box-shadow: 
+        inset 4px 4px 8px var(--shadow-dark),
+        inset -4px -4px 8px var(--shadow-light);
+    color: var(--accent-color); /* Акцентный цвет текста при наведении */
 }
 
-/* --- Стили для КОНКРЕТНЫХ кнопок (сохраняем структуру) --- */
+/* --- Стили для КОНКРЕТНЫХ неоморфических кнопок --- */
 
 /* "Создать Тренировку" и "Войти/Выйти из режима Администратора" */
+/* Они уже получили неоморфизм от базовых стилей. Здесь можем задать их основной цвет текста. */
 .submit-button, #admin-toggle-btn {
     color: var(--text-color); 
-    display: inline-block;
 }
 
 /* Отдельные стили для кнопки "Записаться" */
 .book-button {
     width: 100%;
     margin-top: 15px;
-    color: var(--accent-color);
-    background: rgba(255, 255, 255, 0.6);
+    color: var(--accent-color); /* Записаться - текст акцентный */
 }
 
 .book-button:disabled {
-    background: rgba(200, 200, 200, 0.2);
-    color: #aaaaaa;
+    background: var(--main-bg-color);
+    color: var(--shadow-dark);
     cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: none; /* Отключаем неоморфизм для неактивной кнопки */
 }
 
-/* !!! ИСПРАВЛЕННАЯ "Редактировать Тренировку" (БЕЛАЯ, СТЕКЛЯННАЯ) !!! */
+/* !!! ИСПРАВЛЕННАЯ "Редактировать Тренировку" (белая с синим текстом, неоморфизм) !!! */
 .edit-training-btn {
-    color: #007bff; 
-    border: 1px solid rgba(0, 123, 255, 0.3); 
-    background-color: rgba(255, 255, 255, 0.8) !important; 
+    color: #007bff; /* Синий текст */
+    border: 1px solid #007bff; /* Синяя обводка */
+    background-color: #ffffff !important; /* !!! БЕЛЫЙ ФОН С !IMPORTANT !!! */
     width: 100%; 
     margin-top: 10px;
     padding: 12px 25px; 
     border-radius: 10px; 
-    z-index: 15; /* Повышенный приоритет */
 }
 .edit-training-btn:hover {
-    background-color: #e2f2ff !important;
+    background-color: #e2f2ff; /* Светло-голубой фон при наведении, неоморфизм сохраняется */
 }
 
-/* --- Стили для КНОПОК "УДАЛИТЬ" (Прозрачно-стеклянные) --- */
+/* --- Стили для КНОПОК "УДАЛИТЬ" (БЕЗ НЕОМОРФИЗМА, ПРОЗРАЧНО-РОЗОВЫЕ) --- */
 
 /* "Удалить Тренировку" */
 .delete-training-btn {
-    background-color: rgba(255, 0, 0, 0.1); 
-    color: #dc3545; 
-    border: 1px solid #dc3545; 
-    box-shadow: none; 
+    background-color: rgba(255, 0, 0, 0.1); /* Полупрозрачный красный фон */
+    color: #dc3545; /* Красный текст */
+    border: 1px solid #dc3545; /* Красная обводка */
+    box-shadow: none; /* Без теней неоморфизма */
     width: 100%; 
     margin-top: 10px;
     font-size: 0.9em; 
@@ -178,33 +152,31 @@ h1, h2 {
     border-radius: 10px; 
     cursor: pointer;
     transition: all 0.2s ease;
-    position: relative;
-    z-index: 10;
 }
 .delete-training-btn:hover {
-    background-color: rgba(255, 0, 0, 0.2); 
-    color: #c82333; 
+    background-color: rgba(255, 0, 0, 0.2); /* Чуть темнее при наведении */
+    color: #c82333; /* Текст темнее */
+    box-shadow: none; /* Без теней */
 }
 
 /* "Удалить Запись" (маленькая) */
 .delete-registration-btn { 
-    background-color: rgba(255, 0, 0, 0.05); 
-    color: #dc3545; 
-    border: 1px solid rgba(220, 53, 69, 0.5); 
+    background-color: rgba(255, 0, 0, 0.05); /* Очень легкий красный фон */
+    color: #dc3545; /* Красный текст */
+    border: 1px solid rgba(220, 53, 69, 0.5); /* Полупрозрачная красная обводка */
     padding: 2px 8px;
     margin-left: 10px;
     font-size: 0.8em;
     border-radius: 5px;
     cursor: pointer;
-    box-shadow: none; 
+    box-shadow: none; /* Без теней */
     transition: background-color 0.2s;
     display: inline-block; 
-    position: relative;
-    z-index: 20;
 }
 .delete-registration-btn:hover {
-    background-color: rgba(255, 0, 0, 0.15);
+    background-color: rgba(255, 0, 0, 0.15); /* Чуть темнее при наведении */
 }
+
 
 /* --- Стили для Расписания (Карточки) --- */
 .schedule-list {
@@ -216,25 +188,22 @@ h1, h2 {
 
 .training-card {
     padding: 20px;
-    border-radius: 16px;
-    background: var(--glass-bg);
-    backdrop-filter: blur(var(--glass-blur));
-    -webkit-backdrop-filter: blur(var(--glass-blur));
-    border: 1px solid var(--glass-border);
-    box-shadow: var(--glass-shadow);
+    border-radius: 12px;
+    background: var(--main-bg-color);
     
+    /* Эффект Неоморфизма (выпуклости) */
+    box-shadow: 
+        6px 6px 12px var(--shadow-dark),
+        -6px -6px 12px var(--shadow-light);
+    
+    /* ЦЕНТРОВКА: Flexbox для вертикального расположения элементов */
     display: flex; 
     flex-direction: column;
-    transition: transform 0.3s ease;
-}
-
-.training-card:hover {
-    transform: translateY(-5px);
 }
 
 .training-card h3 {
     color: var(--accent-color);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid var(--shadow-dark);
     padding-bottom: 10px;
     margin-bottom: 15px;
     text-align: left;
@@ -247,17 +216,23 @@ h1, h2 {
     border-radius: 8px;
     font-weight: bold;
     text-align: center;
-    width: 100%; 
+    width: 100%; /* Гарантируем полную ширину */
     box-sizing: border-box;
     
-    /* Стеклянная вдавленная плашка */
-    background: rgba(255, 255, 255, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.05);
+    /* Вдавленный эффект для статуса */
+    background: var(--main-bg-color);
+    box-shadow: 
+        inset 3px 3px 6px var(--shadow-dark),
+        inset -3px -3px 6px var(--shadow-light);
 }
 
-.status-available { color: #28a745; }
-.status-full { color: #dc3545; }
+.status-available {
+    color: #28a745; 
+}
+
+.status-full {
+    color: #dc3545; 
+}
 
 /* Линия-разделитель */
 hr {
@@ -265,8 +240,10 @@ hr {
     margin: 40px auto;
     border: 0;
     height: 1px;
-    background-color: rgba(0, 0, 0, 0.1);
+    background-color: var(--shadow-dark);
+    opacity: 0.5;
 }
+
 
 /* --- Стили АДМИНКИ (дополнительные) --- */
 .training-card ul {
@@ -277,47 +254,47 @@ hr {
 }
 
 .training-card ul li {
-    background: rgba(255, 255, 255, 0.8); /* БЕЛЫЙ СТЕКЛЯННЫЙ ФОН для записей */
-    padding: 8px 12px;
-    border-radius: 8px;
+    background: #ffffff; /* !!! БЕЛЫЙ ФОН для списка записей !!! */
+    padding: 8px;
+    border-radius: 6px;
     margin-bottom: 5px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     font-size: 0.9em;
-    box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.05);
-    border: 1px solid rgba(255, 255, 255, 1);
+    box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.05); /* Легкая тень */
 }
+
 
 /* --- Стили для Баннера (с адаптивностью и УМЕНЬШЕННЫЙ) --- */
 .banner-section {
     max-width: 900px; 
     width: 90%; 
     margin: 20px auto; 
-    border-radius: 16px;
+    border-radius: 12px;
     overflow: hidden; 
-    box-shadow: var(--glass-shadow);
+    box-shadow: 
+        9px 9px 16px var(--shadow-dark),
+        -9px -9px 16px var(--shadow-light);
     
-    max-height: 250px; 
-    min-height: 100px; 
-    position: relative;
-    z-index: 1;
+    max-height: 250px; /* ! ОГРАНИЧЕНИЕ ВЫСОТЫ БАННЕРА по умолчанию ! */
+    min-height: 100px; /* Минимальная высота, чтобы не был слишком тонким */
 }
 
 .banner-image {
     width: 100%; 
-    height: 100%; 
+    height: 100%; /* Занимает всю высоту контейнера */
     display: block; 
-    object-fit: cover; 
-    object-position: center center; 
+    object-fit: cover; /* Обрезает изображение, чтобы оно вписывалось, сохраняя пропорции */
+    object-position: center center; /* Центрируем изображение, если оно обрезается */
 }
 
 /* Медиазапрос для очень маленьких экранов (смартфоны) */
 @media (max-width: 480px) { 
     .banner-section {
-        max-height: 150px; 
+        max-height: 150px; /* Ещё больше уменьшаем высоту для компактности */
     }
     .banner-image {
-        max-height: 150px; 
+        max-height: 150px; /* Соответственно */
     }
 }
