@@ -15,6 +15,8 @@ body {
     font-family: var(--font-family);
     margin: 0;
     padding: 0;
+    /* Добавлен отступ сверху, так как шапка теперь фиксированная (sticky) */
+    padding-top: 0; 
     /* Мягкий градиентный фон, необходимый для того, чтобы стекло "работало" */
     background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
     background-attachment: fixed;
@@ -26,7 +28,46 @@ body {
     align-items: center; 
 }
 
-/* --- Основные стеклянные контейнеры --- */
+/* --- НОВАЯ СЕКЦИЯ: ЗАКРЕПЛЕННАЯ ШАПКА --- */
+.header.sticky-header {
+    position: sticky;
+    top: 0;
+    width: 100%;
+    max-width: 100% !important; /* На всю ширину экрана */
+    margin: 0 0 20px 0 !important;
+    border-radius: 0 0 20px 20px !important; /* Скругление только снизу */
+    z-index: 1000; /* Поверх всех элементов */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 30px !important;
+    box-sizing: border-box;
+    /* Усиленное размытие для читаемости при скролле */
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.header-top-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+}
+
+.logo-img {
+    width: 50px;
+    height: 50px;
+    object-fit: contain;
+}
+
+.header-info {
+    text-align: center; /* Центрирование надписи по Вашему запросу */
+    margin-top: 10px;
+    font-size: 0.9em;
+}
+
+/* --- Ваши оригинальные основные стеклянные контейнеры --- */
 .glass-panel, .header, .admin-section, .schedule-section, .training-card {
     background: var(--glass-bg);
     backdrop-filter: blur(12px);
@@ -224,7 +265,7 @@ hr.glass-hr {
 }
 
 .training-card ul li {
-    background: rgba(255, 255, 255, 0.35); /* Слегка прозрачный фон, как Вы просили */
+    background: rgba(255, 255, 255, 0.35); /* Сохранена прозрачность */
     backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
     padding: 8px 12px;
