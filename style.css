@@ -1,4 +1,4 @@
-/* --- Стили Glassmorphism (Стекло) --- */
+/* --- Стили Glassmorphism (Стекло) | Полная Версия 6.5 --- */
 :root {
     /* Цветовая палитра для текста и акцентов */
     --accent-color: #2c3e50; 
@@ -15,9 +15,7 @@ body {
     font-family: var(--font-family);
     margin: 0;
     padding: 0;
-    /* Добавлен отступ сверху, так как шапка теперь фиксированная (sticky) */
-    padding-top: 0; 
-    /* Мягкий градиентный фон, необходимый для того, чтобы стекло "работало" */
+    /* Мягкий градиентный фон */
     background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
     background-attachment: fixed;
     color: var(--text-color);
@@ -28,47 +26,95 @@ body {
     align-items: center; 
 }
 
-/* --- НОВАЯ СЕКЦИЯ: ЗАКРЕПЛЕННАЯ ШАПКА --- */
+/* --- КОМПАКТНАЯ ЗАКРЕПЛЕННАЯ ШАПКА (Метод прибавления) --- */
 .header.sticky-header {
     position: sticky;
     top: 0;
     width: 100%;
-    max-width: 100% !important; /* На всю ширину экрана */
+    max-width: 100% !important;
     margin: 0 0 20px 0 !important;
-    border-radius: 0 0 20px 20px !important; /* Скругление только снизу */
-    z-index: 1000; /* Поверх всех элементов */
+    border-radius: 0 0 20px 20px !important; 
+    z-index: 1000;
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 20px 30px !important;
+    padding: 10px 20px !important; /* Сужено вертикально */
     box-sizing: border-box;
-    /* Усиленное размытие для читаемости при скролле */
+    background: rgba(255, 255, 255, 0.3);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    background: rgba(255, 255, 255, 0.3);
+    border-bottom: 1px solid var(--glass-border);
 }
 
-.header-top-row {
+.header-main-row {
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 15px;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 900px;
 }
 
 .logo-img {
-    width: 50px;
-    height: 50px;
+    width: 42px;
+    height: 42px;
     object-fit: contain;
 }
 
-.header-info {
-    text-align: center; /* Центрирование надписи по Вашему запросу */
-    margin-top: 10px;
-    font-size: 0.9em;
+.header-center {
+    flex-grow: 1;
+    text-align: center;
 }
 
-/* --- Ваши оригинальные основные стеклянные контейнеры --- */
-.glass-panel, .header, .admin-section, .schedule-section, .training-card {
+.main-title {
+    font-size: 1.2rem !important;
+    margin: 0;
+    color: var(--accent-color);
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+.header-info {
+    text-align: center;
+    font-size: 0.75rem;
+    opacity: 0.9;
+    margin-top: 6px;
+    width: 100%;
+    max-width: 900px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    padding-top: 4px;
+}
+
+/* --- КНОПКА-БУРГЕР (ТРИ ПОЛОСКИ) --- */
+.admin-icon-btn {
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    padding: 0;
+    transition: all 0.3s ease;
+}
+
+.admin-icon-btn:hover {
+    background: rgba(255, 255, 255, 0.6);
+}
+
+.admin-icon-btn span {
+    display: block;
+    width: 20px;
+    height: 2px;
+    background-color: var(--accent-color);
+    border-radius: 2px;
+}
+
+/* --- Основные стеклянные контейнеры (Ваш исходный код) --- */
+.glass-panel, .admin-section, .schedule-section, .training-card {
     background: var(--glass-bg);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
@@ -77,26 +123,25 @@ body {
     border-radius: 15px;
 }
 
-.header, .admin-section, .schedule-section {
+.admin-section, .schedule-section {
     max-width: 900px;
     width: 90%; 
     margin: 20px auto;
     padding: 30px;
 }
 
-h1, h2 {
+h2 {
     color: var(--accent-color);
     text-align: center;
     margin-top: 0;
     font-weight: 600;
 }
 
-/* --- Класс для скрытия элементов --- */
 .hidden {
     display: none !important;
 }
 
-/* --- Стили для Формы и Полей Ввода --- */
+/* --- Стили для Формы и Полей Ввода (Ваш исходный код сохранен) --- */
 .training-form {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -122,7 +167,7 @@ h1, h2 {
 }
 
 /* --- Базовые Стили для Кнопок (Стеклянные) --- */
-.submit-button, .book-button, #admin-toggle-btn, .edit-training-btn { 
+.submit-button, .book-button, .edit-training-btn { 
     padding: 12px 20px;
     border: 1px solid var(--glass-border);
     border-radius: 10px;
@@ -130,28 +175,24 @@ h1, h2 {
     font-size: 16px;
     font-weight: bold;
     transition: all 0.3s ease;
-    
     background: rgba(255, 255, 255, 0.4);
     backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
     color: var(--accent-color);
-    
-    /* Z-index fix: гарантирует, что кнопка нажимается поверх стекла */
     position: relative;
     z-index: 10;
 }
 
-.submit-button:hover, .book-button:hover:not(:disabled), #admin-toggle-btn:hover, .edit-training-btn:hover { 
+.submit-button:hover, .book-button:hover:not(:disabled), .edit-training-btn:hover { 
     background: rgba(255, 255, 255, 0.7);
     transform: translateY(-2px);
     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
 }
 
-/* Отдельные стили для кнопки "Записаться" */
 .book-button {
     width: 100%;
     margin-top: 15px;
-    background: rgba(142, 197, 252, 0.6); /* Легкий синий акцент */
+    background: rgba(142, 197, 252, 0.6); 
 }
 
 .book-button:disabled {
@@ -162,14 +203,13 @@ h1, h2 {
     box-shadow: none;
 }
 
-/* "Редактировать Тренировку" */
 .edit-training-btn {
     width: 100%; 
     margin-top: 10px;
     padding: 12px 25px; 
 }
 
-/* --- Стили для КНОПОК "УДАЛИТЬ" --- */
+/* --- КНОПКИ УДАЛЕНИЯ --- */
 .delete-training-btn {
     background-color: rgba(220, 53, 69, 0.15); 
     color: #dc3545; 
@@ -181,14 +221,8 @@ h1, h2 {
     border-radius: 10px; 
     cursor: pointer;
     transition: all 0.3s ease;
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-    position: relative;
     z-index: 10;
-}
-.delete-training-btn:hover {
-    background-color: rgba(220, 53, 69, 0.3); 
-    transform: translateY(-2px);
+    position: relative;
 }
 
 .delete-registration-btn { 
@@ -200,12 +234,8 @@ h1, h2 {
     font-size: 0.8em;
     border-radius: 6px;
     cursor: pointer;
-    transition: all 0.3s ease;
-    position: relative;
     z-index: 10;
-}
-.delete-registration-btn:hover {
-    background-color: rgba(220, 53, 69, 0.25); 
+    position: relative;
 }
 
 /* --- Стили для Расписания (Карточки) --- */
@@ -220,7 +250,7 @@ h1, h2 {
     padding: 20px;
     display: flex; 
     flex-direction: column;
-    position: relative; /* Важно для внутреннего z-index кнопок */
+    position: relative;
 }
 
 .training-card h3 {
@@ -230,7 +260,6 @@ h1, h2 {
     text-align: left;
 }
 
-/* Статус бронирования */
 .booking-status {
     margin-top: auto;
     margin-bottom: 15px;
@@ -247,7 +276,6 @@ h1, h2 {
 .status-available { color: #1e7e34; }
 .status-full { color: #dc3545; }
 
-/* Линия-разделитель */
 hr.glass-hr {
     max-width: 900px;
     margin: 40px auto;
@@ -256,7 +284,7 @@ hr.glass-hr {
     background: linear-gradient(to right, transparent, rgba(255,255,255,0.6), transparent);
 }
 
-/* --- Стили АДМИНКИ (дополнительные) --- */
+/* --- Списки Админки (Прозрачные) --- */
 .training-card ul {
     list-style: none;
     padding: 0;
@@ -265,9 +293,8 @@ hr.glass-hr {
 }
 
 .training-card ul li {
-    background: rgba(255, 255, 255, 0.35); /* Сохранена прозрачность */
+    background: rgba(255, 255, 255, 0.35); 
     backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
     padding: 8px 12px;
     border-radius: 8px;
     margin-bottom: 8px;
@@ -278,7 +305,7 @@ hr.glass-hr {
     border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
-/* --- Стили для Баннера --- */
+/* --- ИСПРАВЛЕННЫЙ БАННЕР (Фокус на голову) --- */
 .banner-section {
     max-width: 900px; 
     width: 90%; 
@@ -297,10 +324,11 @@ hr.glass-hr {
     height: 100%; 
     display: block; 
     object-fit: cover; 
-    object-position: center center; 
+    /* ПРИОРИТЕТ НА ВЕРХ КАРТИНКИ (Чтобы не срезало голову) */
+    object-position: center 0%; 
 }
 
 @media (max-width: 480px) { 
-    .banner-section { max-height: 150px; }
-    .banner-image { max-height: 150px; }
+    .banner-section { max-height: 180px; }
+    .main-title { font-size: 1.1rem !important; }
 }
