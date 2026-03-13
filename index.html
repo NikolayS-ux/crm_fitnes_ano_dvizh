@@ -1,69 +1,67 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <link rel="icon" type="image/png" href="favicon.png">
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>💪 Фитнес на районе | Усогорск</title>
     
+    <link rel="icon" type="image/png" href="favicon.png">
     <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
-
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <header class="header glass-panel sticky-header">
-    <div class="header-main-row">
-        <img src="logo.png" alt="Л" class="logo-img">
-        <div class="header-center">
-            <h1 class="main-title">Фитнес на районе</h1>
+        <div class="header-main-row">
+            <div class="logo-container">
+                <img src="logo.png" alt="Лого" class="logo-img" onerror="this.style.display='none'">
+            </div>
+            
+            <div class="header-center">
+                <h1 class="main-title">Фитнес на районе</h1>
+            </div>
+            
+            <div class="admin-container">
+                <button id="admin-toggle-btn" class="admin-icon-btn" title="Админ-панель">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
         </div>
-        <button id="admin-toggle-btn" class="admin-icon-btn" title="Админ-панель">
-            <span></span>
-            <span></span>
-            <span></span>
-        </button>
-    </div>
-    <div class="header-info">
-        <p>При поддержке Гранта Главы РК. Управление бронированием.</p>
-    </div>
-</header>
+        <div class="header-info">
+            <p>При поддержке Гранта Главы РК. Управление бронированием.</p>
+        </div>
+    </header>
 
     <section class="banner-section glass-panel">
-        <img src="banner.jpg.png" alt="Баннер АНО Движение - Жизнь" class="banner-image">
+        <img src="banner.jpg.png" alt="АНО Движение - Жизнь" class="banner-image">
     </section>
 
     <div id="admin-panel-container" class="hidden"> 
         <section class="admin-section glass-panel">
-            <h2>➕ Добавить новую тренировку</h2>
+            <h2>➕ Новая тренировка</h2>
             <form id="add-training-form" class="training-form">
                 <div class="form-group">
-                    <label for="date">Дата:</label>
                     <input type="date" id="date" required>
                 </div>
                 <div class="form-group">
-                    <label for="time">Время:</label>
                     <input type="time" id="time" required>
                 </div>
                 <div class="form-group">
-                    <label for="name">Название:</label>
-                    <input type="text" id="name" placeholder="ОФП, Растяжка, Здоровая спина..." required>
+                    <input type="text" id="name" placeholder="Название (ОФП, Йога...)" required>
                 </div>
                 <div class="form-group">
-                    <label for="trainer">Тренер:</label>
-                    <input type="text" id="trainer" placeholder="Иван Иванов" required>
+                    <input type="text" id="trainer" placeholder="Тренер" required>
                 </div>
                 <div class="form-group">
-                    <label for="capacity">Макс. мест:</label>
                     <input type="number" id="capacity" min="1" value="10" required>
                 </div>
-                <button type="submit" class="submit-button">Создать Тренировку</button>
+                <button type="submit" class="submit-button">Создать</button>
             </form>
         </section>
     </div>
 
-    <hr class="glass-hr"> 
-    
     <section class="schedule-section glass-panel">
         <h2>🗓️ Текущее расписание</h2>
         <div id="schedule-list" class="schedule-list">
