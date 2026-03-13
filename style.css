@@ -332,3 +332,68 @@ hr.glass-hr {
     .banner-section { max-height: 180px; }
     .main-title { font-size: 1.1rem !important; }
 }
+
+/* ВСТАВИТЬ В САМЫЙ КОНЕЦ style.css */
+
+/* Делаем логотип круглым и задаем размер */
+.logo-img {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 50%; /* ВОТ ЭТО ДЕЛАЕТ КРУГ */
+    border: 1px solid var(--glass-border);
+}
+
+/* РАСПРЕДЕЛЕНИЕ В ШАПКЕ */
+.logo-container {
+    width: 45px;
+    display: flex;
+    justify-content: flex-start;
+}
+
+.admin-container {
+    width: 45px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+/* Фикс баннера, чтобы не "прыгал" и не срезал голову */
+.banner-section {
+    margin-top: 10px !important;
+    height: 220px !important;
+    overflow: hidden;
+}
+
+.banner-image {
+    object-position: center 0% !important; /* Держим голову в кадре */
+}
+
+/* Чтобы текст в админке не ломал верстку на мобильных */
+.training-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Стили для иконки-бургера (три полоски) */
+.admin-icon-btn {
+    width: 36px;
+    height: 36px;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    padding: 0;
+}
+
+.admin-icon-btn span {
+    display: block;
+    width: 18px;
+    height: 2px;
+    background-color: var(--accent-color);
+}
