@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
+    <link rel="icon" type="image/png" href="favicon.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>💪 Фитнес на районе | Усогорск</title>
@@ -11,11 +12,16 @@
 </head>
 <body>
 
-    <header class="header glass-panel">
+    <header class="header glass-panel sticky-header">
+    <div class="header-top-row">
+        <img src="logo.png" alt="Логотип" class="logo-img">
         <h1>Фитнес на районе</h1>
-        <p>Проект реализуется при поддержке Гранта Главы Республики Коми. Управление бронированием.</p>
-        <button id="admin-toggle-btn" class="submit-button" style="margin-top: 15px;">Войти в режим Администратора</button> 
-    </header>
+    </div>
+    <div class="header-info">
+        <p>Проект реализуется при поддержке Гранта Главы Республики Коми. <br> Система управления бронированием.</p>
+    </div>
+    <button id="admin-toggle-btn" class="submit-button" style="margin-top: 10px;">Админ-панель</button> 
+</header>
 
     <section class="banner-section glass-panel">
         <img src="banner.jpg.png" alt="Баннер АНО Движение - Жизнь" class="banner-image">
