@@ -38,9 +38,7 @@ let isAdminMode = false;
 // --- 2. Логика АДМИНИСТРИРОВАНИЯ (ВХОД ЧЕРЕЗ FIREBASE AUTH) ---
 
 adminButton.addEventListener('click', function() {
-    
     if (!isAdminMode) {
-        // --- Вход в режим админа (Используем Firebase Auth) ---
         const email = prompt('Введите email Администратора:');
         const password = prompt('Введите пароль Администратора:');
         
@@ -48,32 +46,29 @@ adminButton.addEventListener('click', function() {
 
         auth.signInWithEmailAndPassword(email, password)
             .then((userCredential) => {
-                // Вход успешен
                 isAdminMode = true;
                 adminContainer.classList.remove('hidden'); 
-                adminButton.textContent = 'Выйти из режима Администратора';
-                alert(`Вход выполнен. Добро пожаловать, ${userCredential.user.email}!`);
+                adminButton.classList.add('admin-active'); // Подсвечиваем кнопку
+                alert(`Вход выполнен. Добро пожаловать!`);
             })
             .catch((error) => {
-                // Вход неуспешен
                 console.error("Ошибка входа:", error);
                 alert('Ошибка входа. Проверьте логин/пароль.');
             });
 
     } else {
-        // --- Выход из режима админа ---
-        auth.signOut().then(() => {
-            isAdminMode = false;
-            adminContainer.classList.add('hidden'); 
-            adminButton.textContent = 'Войти в режим Администратора';
-            alert('Выход выполнен. Вы в режиме Пользователя.');
-        }).catch((error) => {
-            console.error("Ошибка выхода:", error);
-            alert('Ошибка выхода.');
-        });
+        if (confirm('Выйти из режима Администратора?')) {
+            auth.signOut().then(() => {
+                isAdminMode = false;
+                adminContainer.classList.add('hidden'); 
+                adminButton.classList.remove('admin-active'); // Убираем подсветку
+                alert('Вы в режиме Пользователя.');
+            }).catch((error) => {
+                console.error("Ошибка выхода:", error);
+            });
+        }
     }
 });
-
 
 // --- 3. ЛОГИКА ДОБАВЛЕНИЯ НОВОЙ ТРЕНИРОВКИ (С FIREBASE) ---
 
@@ -387,13 +382,15 @@ function initializeApp() {
         if (user) {
             isAdminMode = true;
             adminContainer.classList.remove('hidden');
-            adminButton.textContent = 'Выйти из режима Администратора';
+            adminButton.classList.add('admin-active'); // Сохраняем активный вид иконки
         } else {
             isAdminMode = false;
             adminContainer.classList.add('hidden'); 
-            adminButton.textContent = 'Войти в режим Администратора';
+            adminButton.classList.remove('admin-active');
         }
     });
+
+    // ... остальной код (VK Bridge и Snapshot) остается без изменений
 
     if (window.vkBridge) {
         vkBridge.send('VKWebAppSetViewSettings', {
